@@ -1,26 +1,207 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-canvas: #e9eaec;
+  --color-surface: #ffffff;
+  --color-sunken: #f4f4f6;
+  --color-line: #e5e6e9;
+  --color-line-strong: #d5d6da;
+  --color-ink: #17181a;
+  --color-ink-soft: #45474c;
+  --color-muted: #8a8d93;
+  --color-ok: #178a4c;
+  --color-ok-soft: #e5f5ec;
+  --color-warn: #a96a10;
+  --color-warn-soft: #fbf1de;
+  --color-danger: #d93843;
+  --color-danger-soft: #fcebec;
+  --color-info: #3e63dd;
+  --color-info-soft: #e9edfb;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+
+  --shadow-frame: 0 1px 2px rgba(23, 24, 26, 0.04),
+    0 12px 40px rgba(23, 24, 26, 0.08);
+  --shadow-card: 0 1px 2px rgba(23, 24, 26, 0.04);
+  --shadow-float: 0 4px 12px rgba(23, 24, 26, 0.08),
+    0 16px 48px rgba(23, 24, 26, 0.14);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-feature-settings: "tnum", "cv05";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Faint sweeping arcs on the canvas, echoing the reference backdrop */
+.canvas-decor {
+  background-color: var(--color-canvas);
+  background-image: radial-gradient(
+      circle 900px at -10% -20%,
+      transparent 898px,
+      rgba(23, 24, 26, 0.05) 899px,
+      transparent 901px
+    ),
+    radial-gradient(
+      circle 1200px at 110% 120%,
+      transparent 1198px,
+      rgba(23, 24, 26, 0.05) 1199px,
+      transparent 1201px
+    ),
+    radial-gradient(
+      circle 700px at 105% -30%,
+      transparent 698px,
+      rgba(23, 24, 26, 0.04) 699px,
+      transparent 701px
+    );
+}
+
+/* ---- Isometric floor view ---- */
+
+.iso-stage {
+  perspective: 2200px;
+  perspective-origin: 50% 30%;
+}
+
+.iso-plane {
+  transform: rotateX(54deg) rotateZ(45deg);
+  transform-style: preserve-3d;
+  /* Size and offset must match CELL and PLANE_PADDING in lib/floor-grid.ts, so
+     the printed grid lines up with the positions tables snap to. */
+  background-image: linear-gradient(rgba(23, 24, 26, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 24, 26, 0.045) 1px, transparent 1px);
+  background-position: 24px 24px;
+  background-size: 120px 120px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 6px;
+  box-shadow: -18px 18px 0 0 rgba(23, 24, 26, 0.05);
+}
+
+.iso-block {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 150ms ease;
+}
+
+.iso-block[data-clickable="true"]:hover {
+  transform: translateZ(10px);
+  cursor: pointer;
+}
+
+/* Extruded 3D volume: top face lifted by --h, south (+y) and east (+x)
+   walls folded down from the plane. Light comes from the north-west, so
+   the east wall is the darkest. */
+.iso3 {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.iso3 > .f-top {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(var(--h));
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 7px;
+  transition: border-color 150ms ease, background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.iso3 > .f-s {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--h);
+  transform-origin: 50% 100%;
+  transform: rotateX(-90deg);
+  background: #dfe0e3;
+}
+
+.iso3 > .f-e {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--h);
+  height: 100%;
+  transform-origin: 100% 50%;
+  transform: rotateY(90deg);
+  background: #ced0d4;
+}
+
+.iso3 > .f-ground {
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+  box-shadow: -12px 12px 0 0 rgba(23, 24, 26, 0.06);
+}
+
+.iso-block[data-state="occupied"] .f-top {
+  background: #edeef1;
+}
+
+.iso-block[data-selected="true"] .f-top {
+  border-color: var(--color-info);
+  box-shadow: 0 0 0 2px var(--color-info-soft);
+}
+
+.iso-block[data-clickable="true"]:hover .f-top {
+  border-color: var(--color-ink);
+}
+
+.iso-chair > .f-top {
+  border-radius: 3px;
+  background: #f1f2f4;
+  border-color: #d5d6da;
+}
+
+.iso-chair > .f-s {
+  background: #d9dadd;
+}
+
+.iso-chair > .f-e {
+  background: #c9cace;
+}
+
+/* Upright badge standing on the table's top face (direct child of the
+   .iso-block so the browser keeps the 3D context) */
+.iso-badge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) translateZ(var(--h, 16px)) rotateZ(-45deg)
+    rotateX(-54deg) translateY(-70%);
+}
+
+/* ---- Scrollbars ---- */
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+.thin-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
