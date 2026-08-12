@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getBookingById,
   getBookingHours,
+  getSettings,
   getSpecialDates,
   requireRestaurant,
 } from "@/lib/data";
@@ -122,11 +123,17 @@ export async function getAvailability(
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || partySize < 1) {
       return { ok: false, error: "Choose a valid date and party size." };
     }
-    const [times, bookingHours, specialDates] = await Promise.all([
-      fetchAvailability(restaurant.slug, date, partySize),
+    const [settings, bookingHours, specialDates] = await Promise.all([
+      getSettings(restaurant.id),
       getBookingHours(restaurant.id),
       getSpecialDates(restaurant.id),
     ]);
+    const times = await fetchAvailability(
+      restaurant.slug,
+      date,
+      partySize,
+      settings?.strictTableCapacity ?? false
+    );
     const slots = times
       .map((time) => resolveSlot(date, time, bookingHours, specialDates))
       // Keep an overnight service chronological: Tuesday 23:30 must appear
@@ -159,6 +166,7 @@ export async function createReservation(input: {
 }): Promise<ActionResult> {
   try {
     const restaurant = await requireRestaurant();
+    const settings = await getSettings(restaurant.id);
     if (!input.name.trim() || !input.phone.trim()) {
       return { ok: false, error: "Name and phone are required." };
     }
@@ -177,6 +185,7 @@ export async function createReservation(input: {
       phone: input.phone.trim(),
       email: input.email.trim(),
       notes: input.notes.trim(),
+      strictTableCapacity: settings?.strictTableCapacity ?? false,
     });
     revalidateReservations();
     return { ok: true, data: undefined };
@@ -219,6 +228,8 @@ export async function updateReservation(input: {
       date: input.date,
       time: input.time,
       partySize: input.partySize,
+      strictTableCapacity:
+        (await getSettings(restaurant.id))?.strictTableCapacity ?? false,
     });
     revalidateReservations();
     return { ok: true, data: undefined };

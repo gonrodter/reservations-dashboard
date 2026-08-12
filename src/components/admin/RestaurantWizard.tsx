@@ -11,6 +11,7 @@ import {
   saveCombinationFor,
   savePeriodFor,
   saveSettingsFor,
+  saveStrictTableCapacityFor,
   saveTableFor,
   setCombinationActiveFor,
   setPeriodActiveFor,
@@ -28,6 +29,7 @@ import { TopBar } from "@/components/TopBar";
 import { Button, Card, ErrorNote, PageHeading } from "@/components/ui";
 import { BasicsForm } from "@/components/admin/BasicsForm";
 import { SettingsForm } from "@/components/editors/SettingsForm";
+import { TableCapacityPolicy } from "@/components/editors/TableCapacityPolicy";
 import { ScheduleEditor } from "@/components/editors/ScheduleEditor";
 import {
   AddTableButton,
@@ -101,7 +103,8 @@ export function RestaurantWizard({
   const [activating, setActivating] = useState(false);
   const [activateError, setActivateError] = useState<string | null>(null);
 
-  const { restaurant, settings, bookingHours, tables, combinations, status } = config;
+  const { restaurant, owner, settings, bookingHours, tables, combinations, status } =
+    config;
   const refresh = () => router.refresh();
 
   function go(next: WizardStep) {
@@ -116,7 +119,7 @@ export function RestaurantWizard({
     if (candidate === step) return "current";
     switch (candidate) {
       case "restaurant":
-        return "done";
+        return status.owner ? "done" : "todo";
       case "settings":
         return status.settings ? "done" : "todo";
       case "schedule":
@@ -218,12 +221,13 @@ export function RestaurantWizard({
                 <>
                   <PageHeading
                     title="Restaurant"
-                    description="The name your team sees, and the domain the reservation system uses to recognise this restaurant."
+                    description="The restaurant identity and the owner account that can access its dashboard."
                   />
                   <div className="mt-4">
                     <BasicsForm
                       initialName={restaurant.name}
                       initialDomain={restaurant.slug}
+                      initialOwnerEmail={owner?.email}
                       submitLabel="Save restaurant"
                       save={(input) => updateRestaurantBasics(restaurant.id, input)}
                       onSaved={refresh}
@@ -293,6 +297,13 @@ export function RestaurantWizard({
                     }
                   />
                   <div className="mt-4">
+                    <TableCapacityPolicy
+                      enabled={settings?.strictTableCapacity ?? false}
+                      save={(enabled) =>
+                        saveStrictTableCapacityFor(restaurant.id, enabled)
+                      }
+                      onSaved={refresh}
+                    />
                     <TablesEditor
                       tables={tables}
                       actions={{
@@ -357,6 +368,9 @@ export function RestaurantWizard({
                     <SummaryRow label="Domain / identifier">
                       <span className="font-medium">{restaurant.slug}</span>
                     </SummaryRow>
+                    <SummaryRow label="Owner account">
+                      {owner?.email ?? <Missing />}
+                    </SummaryRow>
                     <SummaryRow label="Timezone">
                       {settings?.timezone ?? <Missing />}
                     </SummaryRow>
@@ -380,6 +394,11 @@ export function RestaurantWizard({
                       ) : (
                         <Missing />
                       )}
+                    </SummaryRow>
+                    <SummaryRow label="Table capacity rule">
+                      {settings?.strictTableCapacity
+                        ? "Exact capacity or one spare seat"
+                        : "Flexible table assignment"}
                     </SummaryRow>
                     <SummaryRow label="Advance rules">
                       {settings?.minAdvanceMinutes != null &&
@@ -472,6 +491,7 @@ export function RestaurantWizard({
                     <div className="mt-4 rounded-lg bg-warn-soft px-3 py-2.5 text-xs leading-5 text-warn">
                       Before activating, this restaurant still needs{" "}
                       {joinPhrases([
+                        !status.owner && "an owner account",
                         !status.settings && "its booking settings saved",
                         !status.schedule && "at least one day of booking hours",
                         !status.tables && "at least one table in service",

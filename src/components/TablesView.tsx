@@ -8,6 +8,7 @@ import {
   saveTable,
   setCombinationActive,
   setTableActive,
+  saveStrictTableCapacity,
 } from "@/lib/config-actions";
 import { TopBar } from "@/components/TopBar";
 import { TableDialog } from "@/components/TableDialog";
@@ -15,6 +16,7 @@ import { CombinationDialog } from "@/components/CombinationDialog";
 import { PageHeading, Segmented } from "@/components/ui";
 import { TablesEditor } from "@/components/editors/TablesEditor";
 import { CombinationsEditor } from "@/components/editors/CombinationsEditor";
+import { TableCapacityPolicy } from "@/components/editors/TableCapacityPolicy";
 
 type Tab = "tables" | "combinations";
 
@@ -22,10 +24,12 @@ export function TablesView({
   restaurant,
   tables,
   combinations,
+  strictTableCapacity,
 }: {
   restaurant: Restaurant;
   tables: RestaurantTable[];
   combinations: TableCombination[];
+  strictTableCapacity: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("tables");
@@ -71,11 +75,18 @@ export function TablesView({
 
           <div className="mt-5">
             {tab === "tables" ? (
-              <TablesEditor
-                tables={tables}
-                actions={{ save: saveTable, setActive: setTableActive }}
-                onChanged={refresh}
-              />
+              <>
+                <TableCapacityPolicy
+                  enabled={strictTableCapacity}
+                  save={saveStrictTableCapacity}
+                  onSaved={refresh}
+                />
+                <TablesEditor
+                  tables={tables}
+                  actions={{ save: saveTable, setActive: setTableActive }}
+                  onChanged={refresh}
+                />
+              </>
             ) : (
               <CombinationsEditor
                 combinations={combinations}

@@ -77,12 +77,14 @@ function collectSlots(value: unknown, found: Set<string>, depth = 0) {
 export async function fetchAvailability(
   restaurantSlug: string,
   date: string,
-  partySize: number
+  partySize: number,
+  strictTableCapacity: boolean
 ): Promise<string[]> {
   const data = await post("restaurant-availability", {
     restaurantSlug,
     date,
     partySize,
+    strictTableCapacity,
   });
   const found = new Set<string>();
   collectSlots(data, found);
@@ -98,6 +100,7 @@ export async function createBooking(payload: {
   phone: string;
   email: string;
   notes: string;
+  strictTableCapacity: boolean;
 }) {
   return post("restaurant-create-booking", payload);
 }
@@ -109,6 +112,7 @@ export async function updateBooking(payload: {
   date: string;
   time: string;
   partySize: number;
+  strictTableCapacity: boolean;
 }) {
   return post("restaurant-update-booking", payload);
 }

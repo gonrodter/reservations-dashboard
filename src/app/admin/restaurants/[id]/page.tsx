@@ -30,13 +30,15 @@ export default async function AdminRestaurantPage({
 
   // Without an explicit step, drop the superadmin on the first thing still
   // missing, so "continue onboarding" needs no thought.
-  const nextIncomplete: WizardStep = !config.status.settings
-    ? "settings"
-    : !config.status.schedule
-      ? "schedule"
-      : !config.status.tables
-        ? "tables"
-        : "review";
+  const nextIncomplete: WizardStep = !config.status.owner
+    ? "restaurant"
+    : !config.status.settings
+      ? "settings"
+      : !config.status.schedule
+        ? "schedule"
+        : !config.status.tables
+          ? "tables"
+          : "review";
 
   const step = requested ?? (config.restaurant.active ? "restaurant" : nextIncomplete);
 

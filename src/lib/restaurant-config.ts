@@ -297,6 +297,7 @@ export interface SettingsInput {
   maxOnlinePartySize: number;
   minAdvanceMinutes: number;
   maxAdvanceDays: number;
+  strictTableCapacity: boolean;
 }
 
 export async function writeSettings(
@@ -314,6 +315,9 @@ export async function writeSettings(
     new Intl.DateTimeFormat("en-GB", { timeZone: timezone });
   } catch {
     return { ok: false, error: "That is not a valid timezone." };
+  }
+  if (typeof input.strictTableCapacity !== "boolean") {
+    return { ok: false, error: "Choose a valid table assignment rule." };
   }
 
   const checks: [keyof SettingsInput, number, number, string][] = [
@@ -346,9 +350,28 @@ export async function writeSettings(
       max_online_party_size: numbers.maxOnlinePartySize,
       min_advance_minutes: numbers.minAdvanceMinutes,
       max_advance_days: numbers.maxAdvanceDays,
+      strict_table_capacity: input.strictTableCapacity,
     },
     { onConflict: "restaurant_id" }
   );
+
+  if (error) return { ok: false, error: dbError(error) };
+  return { ok: true, data: undefined };
+}
+
+/** Update the table-fitting rule from the Tables screen without resaving all settings. */
+export async function writeStrictTableCapacity(
+  restaurantId: string,
+  enabled: boolean
+): Promise<ActionResult> {
+  if (typeof enabled !== "boolean") {
+    return { ok: false, error: "Choose a valid table assignment rule." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("restaurant_settings")
+    .update({ strict_table_capacity: enabled })
+    .eq("restaurant_id", restaurantId);
 
   if (error) return { ok: false, error: dbError(error) };
   return { ok: true, data: undefined };

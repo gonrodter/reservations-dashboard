@@ -136,7 +136,7 @@ export function FloorView({
   tables: RestaurantTable[];
   bookings: Booking[];
   selectedId: string | null;
-  onSelect: (booking: Booking) => void;
+  onSelect: (booking: Booking, tableBookings?: Booking[]) => void;
   timezone?: string;
   /** Lets the restaurant's own team drag tables into their real layout. */
   arrangeable?: boolean;
@@ -487,8 +487,10 @@ export function FloorView({
             {states.map(({ table, seated, upcoming }) => {
               const size = blockSize(table.capacity);
               const booking = seated ?? upcoming[0] ?? null;
-              const selected =
-                booking !== null && booking !== undefined && booking.id === selectedId;
+              const tableBookings = seated ? [seated, ...upcoming] : upcoming;
+              const selected = tableBookings.some(
+                (candidate) => candidate.id === selectedId
+              );
               const position = positions.get(table.id) ?? { x: 0, y: 0 };
               const centre = cellCentre(position);
               const dragging = dragId === table.id;
@@ -509,7 +511,7 @@ export function FloorView({
                     type="button"
                     disabled={!arranging && !booking}
                     onClick={() => {
-                      if (!arranging && booking) onSelect(booking);
+                      if (!arranging && booking) onSelect(booking, tableBookings);
                     }}
                     onPointerDown={(event) => onPointerDown(event, table.id)}
                     onMouseDown={(event) => onPointerDown(event, table.id)}

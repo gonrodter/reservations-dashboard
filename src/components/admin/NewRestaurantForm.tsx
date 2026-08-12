@@ -27,7 +27,7 @@ export function NewRestaurantForm() {
           <div className="mt-3">
             <PageHeading
               title="Onboard a restaurant"
-              description="Start with the name and domain. The restaurant is created switched off, so you can configure the rest and activate it when everything is ready."
+              description="Start with its identity and owner. We will send the owner a password invitation, while the restaurant stays switched off until setup is complete."
             />
           </div>
 

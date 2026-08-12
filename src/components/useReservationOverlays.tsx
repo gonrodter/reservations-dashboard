@@ -20,6 +20,7 @@ type DialogState =
 export function useReservationOverlays(minDate: string) {
   const router = useRouter();
   const [selected, setSelected] = useState<Booking | null>(null);
+  const [tableBookings, setTableBookings] = useState<Booking[]>([]);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [cancelTarget, setCancelTarget] = useState<Booking | null>(null);
 
@@ -27,14 +28,30 @@ export function useReservationOverlays(minDate: string) {
     setDialog(null);
     setCancelTarget(null);
     setSelected(null);
+    setTableBookings([]);
     router.refresh();
+  }
+
+  function select(booking: Booking) {
+    setTableBookings([]);
+    setSelected(booking);
+  }
+
+  function selectFromTable(booking: Booking, bookings: Booking[] = []) {
+    setTableBookings(bookings);
+    setSelected(booking);
   }
 
   const overlays = (
     <>
       <DetailDrawer
         booking={selected}
-        onClose={() => setSelected(null)}
+        bookings={tableBookings}
+        onNavigate={setSelected}
+        onClose={() => {
+          setSelected(null);
+          setTableBookings([]);
+        }}
         onEdit={(booking) => setDialog({ mode: "edit", booking })}
         onCancel={(booking) => setCancelTarget(booking)}
       />
@@ -60,7 +77,8 @@ export function useReservationOverlays(minDate: string) {
 
   return {
     selected,
-    select: setSelected,
+    select,
+    selectFromTable,
     /** Opens the create dialog, optionally pre-filled with a date. */
     openCreate: (date?: string) => setDialog({ mode: "create", date }),
     overlays,

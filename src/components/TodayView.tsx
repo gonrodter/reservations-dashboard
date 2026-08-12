@@ -33,7 +33,8 @@ export function TodayView({
   nowMs: number;
 }) {
   const [query, setQuery] = useState("");
-  const { selected, select, openCreate, overlays } = useReservationOverlays(today);
+  const { selected, select, selectFromTable, openCreate, overlays } =
+    useReservationOverlays(today);
   useLiveBookings(restaurant.id);
 
   const filtered = useMemo(() => {
@@ -139,7 +140,7 @@ export function TodayView({
             tables={tables}
             bookings={bookings}
             selectedId={selected?.id ?? null}
-            onSelect={select}
+            onSelect={selectFromTable}
             timezone={restaurant.timezone}
             arrangeable
             defaultDurationMinutes={defaultDurationMinutes}

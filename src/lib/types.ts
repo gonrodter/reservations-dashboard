@@ -37,6 +37,11 @@ export interface RestaurantSettings {
   maxOnlinePartySize: number | null;
   minAdvanceMinutes: number | null;
   maxAdvanceDays: number | null;
+  /**
+   * When enabled, a party may only use a table with its exact capacity or one
+   * spare seat. False preserves the existing flexible assignment behaviour.
+   */
+  strictTableCapacity: boolean;
 }
 
 export interface RestaurantTable {
@@ -180,6 +185,10 @@ export function normalizeSettings(row: Row): RestaurantSettings {
     maxOnlinePartySize: num(pick(row, ["max_online_party_size", "max_party_size"])),
     minAdvanceMinutes: num(pick(row, ["min_advance_minutes"])),
     maxAdvanceDays: num(pick(row, ["max_advance_days"])),
+    strictTableCapacity: bool(
+      pick(row, ["strict_table_capacity", "strict_capacity_matching"]),
+      false
+    ),
   };
 }
 

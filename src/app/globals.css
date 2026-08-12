@@ -197,6 +197,30 @@ body {
   border-radius: 3px;
 }
 
+/* Direction follows time: later reservations enter from the right, earlier
+   reservations from the left, while the drawer itself stays anchored. */
+@keyframes reservation-enter-next {
+  from {
+    opacity: 0.35;
+    transform: translateX(18px);
+  }
+}
+
+@keyframes reservation-enter-previous {
+  from {
+    opacity: 0.35;
+    transform: translateX(-18px);
+  }
+}
+
+.reservation-enter-next {
+  animation: reservation-enter-next 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reservation-enter-previous {
+  animation: reservation-enter-previous 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

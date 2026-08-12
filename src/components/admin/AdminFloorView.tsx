@@ -40,6 +40,7 @@ export function AdminFloorView({
   const router = useRouter();
   const [switching, startSwitch] = useTransition();
   const [selected, setSelected] = useState<Booking | null>(null);
+  const [tableBookings, setTableBookings] = useState<Booking[]>([]);
 
   const restaurant = snapshot?.restaurant;
 
@@ -67,7 +68,14 @@ export function AdminFloorView({
   }, [snapshot, nowMs]);
 
   function pick(id: string) {
+    setSelected(null);
+    setTableBookings([]);
     startSwitch(() => router.replace(`/admin/floors?restaurant=${id}`, { scroll: false }));
+  }
+
+  function select(booking: Booking, bookings: Booking[] = []) {
+    setTableBookings(bookings);
+    setSelected(booking);
   }
 
   if (restaurants.length === 0) {
@@ -120,7 +128,7 @@ export function AdminFloorView({
         <FloorBody
           snapshot={snapshot}
           selected={selected}
-          onSelect={setSelected}
+          onSelect={select}
           stats={stats}
           nowMs={nowMs}
         />
@@ -128,8 +136,13 @@ export function AdminFloorView({
 
       <DetailDrawer
         booking={selected}
+        bookings={tableBookings}
+        onNavigate={setSelected}
         readOnly
-        onClose={() => setSelected(null)}
+        onClose={() => {
+          setSelected(null);
+          setTableBookings([]);
+        }}
         onEdit={() => {}}
         onCancel={() => {}}
       />
@@ -146,7 +159,7 @@ function FloorBody({
 }: {
   snapshot: FloorSnapshot;
   selected: Booking | null;
-  onSelect: (booking: Booking) => void;
+  onSelect: (booking: Booking, tableBookings?: Booking[]) => void;
   stats: { label: string; value: string; tone?: "default" | "danger" }[];
   nowMs?: number;
 }) {
@@ -190,7 +203,7 @@ function FloorBody({
                 key={booking.id}
                 booking={booking}
                 selected={selected?.id === booking.id}
-                onSelect={onSelect}
+                onSelect={(nextBooking) => onSelect(nextBooking)}
               />
             ))
           )}

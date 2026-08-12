@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getBookingsBetween, getSettings, getTables } from "@/lib/data";
 import { todayISO } from "@/lib/dates";
 import {
@@ -169,6 +170,7 @@ export async function getRestaurantFloor(
 }
 
 export interface OnboardingStatus {
+  owner: boolean;
   settings: boolean;
   schedule: boolean;
   tables: boolean;
@@ -178,6 +180,10 @@ export interface OnboardingStatus {
 
 export interface RestaurantConfig {
   restaurant: AdminRestaurant;
+  owner: {
+    id: string;
+    email: string;
+  } | null;
   settings: RestaurantSettings | null;
   bookingHours: BookingHour[];
   tables: RestaurantTable[];
@@ -205,6 +211,34 @@ export async function getRestaurantConfig(
 
   if (error) throw new DataError("Could not load this restaurant.");
   if (!restaurantRow) return null;
+
+  const admin = createAdminClient();
+  const { data: ownerMemberships, error: ownerMembershipError } = await admin
+    .from("restaurant_users")
+    .select("user_id")
+    .eq("restaurant_id", restaurantId)
+    .eq("role", "owner")
+    .limit(1);
+
+  if (ownerMembershipError) {
+    throw new DataError("Could not load this restaurant's owner.");
+  }
+
+  const ownerId = ownerMemberships?.[0]?.user_id
+    ? String(ownerMemberships[0].user_id)
+    : null;
+  let owner: RestaurantConfig["owner"] = null;
+
+  if (ownerId) {
+    const { data: ownerData, error: ownerError } =
+      await admin.auth.admin.getUserById(ownerId);
+    if (ownerError && ownerError.code !== "user_not_found") {
+      throw new DataError("Could not load this restaurant's owner.");
+    }
+    if (ownerData.user?.email) {
+      owner = { id: ownerId, email: ownerData.user.email };
+    }
+  }
 
   const [settingsResult, hoursResult, tablesResult, combinationsResult] =
     await Promise.all([
@@ -280,17 +314,20 @@ export async function getRestaurantConfig(
 
   return {
     restaurant: normalizeAdminRestaurant(restaurantRow as Record<string, unknown>),
+    owner,
     settings,
     bookingHours,
     tables,
     combinations,
     status: {
+      owner: owner !== null,
       settings: settingsComplete,
       schedule: scheduleComplete,
       tables: tablesComplete,
       // Combinations are genuinely optional, so the step never blocks activation.
       combinations: combinations.length > 0,
-      readyToActivate: settingsComplete && scheduleComplete && tablesComplete,
+      readyToActivate:
+        owner !== null && settingsComplete && scheduleComplete && tablesComplete,
     },
   };
 }

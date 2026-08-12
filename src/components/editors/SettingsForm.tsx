@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { RestaurantSettings } from "@/lib/types";
 import type { SettingsInput } from "@/lib/config-actions";
 import type { ActionResult } from "@/lib/errors";
-import { Button, Card, ErrorNote, Field, Input } from "@/components/ui";
+import { Button, Card, ErrorNote, Field, Input, Toggle } from "@/components/ui";
 import { CheckIcon } from "@/components/icons";
 
 // Every setting is described in the words restaurant staff already use; the
@@ -82,6 +82,9 @@ export function SettingsForm({
   const [maxAdvance, setMaxAdvance] = useState(
     initial(settings?.maxAdvanceDays, SUGGESTED.maxAdvanceDays)
   );
+  const [strictTableCapacity, setStrictTableCapacity] = useState(
+    settings?.strictTableCapacity ?? false
+  );
 
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +104,7 @@ export function SettingsForm({
       maxOnlinePartySize: Number(maxParty),
       minAdvanceMinutes: Number(minNotice),
       maxAdvanceDays: Number(maxAdvance),
+      strictTableCapacity,
     });
 
     setPending(false);
@@ -261,6 +265,18 @@ export function SettingsForm({
               className="sm:max-w-40"
             />
           </Field>
+          <div className="rounded-lg border border-line bg-sunken/40 px-3 py-3">
+            <Toggle
+              checked={strictTableCapacity}
+              onChange={setStrictTableCapacity}
+              label="Match parties closely to table capacity"
+            />
+            <p className="mt-1 pl-10 text-[11px] leading-4 text-muted">
+              When on, a party can only book a table with the exact number of
+              seats or one spare seat. For example, 2 guests cannot occupy a
+              4-seat table.
+            </p>
+          </div>
         </div>
       </Card>
 

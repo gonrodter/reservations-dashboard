@@ -12,6 +12,7 @@ import {
   writePeriod,
   writeSettings,
   writeSpecialDate,
+  writeStrictTableCapacity,
   writeTable,
   writeTableLayout,
   type CombinationInput,
@@ -138,5 +139,13 @@ export async function saveSettings(input: SettingsInput): Promise<ActionResult> 
   return run(
     ["/", "/settings", "/reservations", "/calendar", "/schedule"],
     (id) => writeSettings(id, input)
+  );
+}
+
+export async function saveStrictTableCapacity(
+  enabled: boolean
+): Promise<ActionResult> {
+  return run(["/tables", "/settings"], (id) =>
+    writeStrictTableCapacity(id, enabled)
   );
 }

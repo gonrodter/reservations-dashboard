@@ -48,18 +48,21 @@ Stack: Next.js 16 (App Router) · TypeScript · Tailwind v4 · Supabase (Auth + 
 
 ## 2. Variables de entorno
 
-Solo dos, y las dos son públicas (van al navegador):
+Hay dos variables públicas y dos exclusivas del servidor:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://TU-PROYECTO.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+SUPABASE_SECRET_KEY=sb_secret_...
+APP_URL=https://reservations.terron-studio.com
 ```
 
 - Van en **`.env.local`** (está en `.gitignore`, nunca se sube a git).
 - `.env` sería para valores por defecto compartidos; aquí no hace falta.
-- **Nunca** metas la `service_role` / secret key en este proyecto. Todo el acceso
-  a datos va con la sesión del usuario autenticado y RLS. Si algún día hace falta
-  una operación privilegiada, va en n8n o en una edge function, no aquí.
+- `SUPABASE_SECRET_KEY` permite invitar y eliminar usuarios de Auth. Solo se usa
+  desde código `server-only`, después de comprobar que la sesión es superadmin;
+  **nunca** debe llevar el prefijo `NEXT_PUBLIC_` ni llegar al navegador.
+- `APP_URL` construye el destino `/set-password` de las invitaciones.
 
 Si cambias una variable, **reinicia el servidor**: las `NEXT_PUBLIC_*` se
 incrustan en el bundle al compilar.
@@ -243,7 +246,7 @@ alta, con acciones para activar, desactivar, editar o **continuar un alta a medi
 
 **+ New restaurant** → `/admin/restaurants/new`
 
-**Paso 1 — Restaurant.** Nombre y dominio de producción.
+**Paso 1 — Restaurant.** Nombre, dominio de producción y email del propietario.
 
 El dominio es lo importante: se guarda en `restaurants.slug` y **es el
 identificador con el que n8n reconoce al restaurante**. Se normaliza solo, y ves
@@ -260,8 +263,13 @@ el resultado en vivo mientras escribes:
 Es decir: se quitan protocolo, `www.`, ruta, query, puerto y barra final, y se
 pasa a minúsculas. Un dominio ya usado por otro restaurante da error explícito.
 
-El restaurante se crea **desactivado** (`active = false`). No es reservable
-todavía.
+Al guardar, Supabase crea el usuario, lo asigna al restaurante con rol `owner` y
+le envía un enlace para crear su contraseña en `/set-password`. El restaurante
+se crea **desactivado** (`active = false`) y todavía no es reservable.
+
+En un restaurante existente, cambiar el email invita primero al nuevo
+propietario y después revoca el acceso del anterior. Su cuenta de Auth se elimina
+si no pertenece a otro restaurante y no es superadmin.
 
 **Paso 2 — Booking settings.** Los mismos ajustes que ve el restaurante. Aquí
 los campos salen **vacíos a propósito**, con el valor habitual solo como
@@ -316,7 +324,10 @@ servicio que mirar.
 Puedes cerrar el navegador en cualquier punto. El asistente **no guarda progreso
 propio**: calcula qué pasos están hechos mirando los datos que hay en Supabase.
 
-- Ajustes hechos = existe la fila de `restaurant_settings` con los 6 valores.
+- Ajustes hechos = existe la fila de `restaurant_settings` con los valores
+  obligatorios.
+- Propietario hecho = existe una fila `restaurant_users` con rol `owner` y un
+  usuario válido en Supabase Auth.
 - Horario hecho = hay al menos un turno activo.
 - Mesas hechas = hay al menos una mesa activa.
 - Combinaciones = opcional, nunca bloquea.
@@ -343,6 +354,16 @@ proyecto de Supabase.
   inactivo, nunca como "live", por seguridad.)
 - `restaurant_settings` necesita un **índice único en `restaurant_id`**, porque
   el guardado usa `upsert ... onConflict: restaurant_id`.
+- La regla opcional de ajuste estricto de mesas necesita esta columna (la
+  migración también está en `supabase/migrations/`):
+
+  ```sql
+  alter table restaurant_settings
+    add column if not exists strict_table_capacity boolean not null default false;
+  ```
+
+  Activada, una reserva de N personas solo puede usar una mesa de N o N+1
+  sillas. Desactivada conserva el comportamiento flexible anterior.
 - Para poder **organizar el plano de mesas**, `restaurant_tables` necesita dos
   columnas de posición. Comprobado contra tu proyecto: **todavía no existen**.
 
@@ -360,8 +381,9 @@ proyecto de Supabase.
   altas simultáneas.
 
 ### 7.2 Políticas RLS
-Nada en este proyecto salta RLS, así que si falta una política la pantalla carga
-pero el guardado falla con *"You do not have permission to change this setting."*
+El acceso diario y la configuración normal pasan por RLS. La única excepción es
+el cliente secreto y exclusivo del servidor que administra invitaciones,
+usuarios de Auth y sus filas en `restaurant_users`.
 
 **Personal de restaurante** — SELECT en `restaurant_users`, `restaurants`,
 `restaurant_settings`, `restaurant_tables`, `table_combinations`,
@@ -384,9 +406,16 @@ la publicación `supabase_realtime`. Si no lo haces, el panel sigue actualizánd
 por foco de pestaña y cada 60 s.
 
 ### 7.4 Usuarios
-- Crear las cuentas en Supabase Auth (no hay registro público).
-- Personal: una fila en `restaurant_users (user_id, restaurant_id, role)`.
+- El alta y cambio de propietario se hacen desde el asistente de superadmin.
+- El propietario recibe un email, crea su contraseña y entra con una fila en
+  `restaurant_users (user_id, restaurant_id, role = 'owner')`.
+- No hay registro público. El resto del personal aún se crea manualmente.
 - Superadmin: fila en `user_profiles` con `global_role = 'superadmin'`.
+
+En Supabase → Authentication → URL Configuration, añade como Redirect URL
+`https://reservations.terron-studio.com/set-password` (y la equivalente local
+si vas a probar invitaciones en desarrollo). Para producción configura SMTP
+propio: el servicio de correo de prueba de Supabase tiene límites muy bajos.
 
 ---
 
@@ -403,7 +432,7 @@ el único archivo que hay que tocar.
 | Tabla | Columnas que se escriben |
 |---|---|
 | `restaurants` | `name`, `slug`, `active` |
-| `restaurant_settings` | `restaurant_id`, `restaurant_name`, `timezone`, `slot_interval_minutes`, `default_booking_duration_minutes`, `max_online_party_size`, `min_advance_minutes`, `max_advance_days` |
+| `restaurant_settings` | `restaurant_id`, `restaurant_name`, `timezone`, `slot_interval_minutes`, `default_booking_duration_minutes`, `max_online_party_size`, `min_advance_minutes`, `max_advance_days`, `strict_table_capacity` |
 | `restaurant_tables` | `restaurant_id`, `name`, `capacity`, `zone`, `active`, `grid_x`, `grid_y` |
 | `table_combinations` | `restaurant_id`, `name`, `capacity`, `active` |
 | `table_combination_members` | `combination_id`, `table_id` |
@@ -440,6 +469,12 @@ resuelve siempre desde la sesión, nunca lo manda el navegador. En modificar y
 cancelar, el `bookingId` se comprueba antes bajo RLS y el teléfono se saca de la
 propia reserva.
 
+Las peticiones de disponibilidad, creación y modificación incluyen además
+`strictTableCapacity`, siempre resuelto en el servidor desde
+`restaurant_settings`. El workflow debe aplicar la regla tanto al calcular los
+huecos como al asignar la mesa dentro de la operación transaccional; no debe
+confiar en un valor enviado directamente por un cliente público.
+
 ---
 
 ## 10. Errores frecuentes y qué significan
@@ -451,6 +486,8 @@ propia reserva.
 | "That change conflicts with existing records..." | borrado bloqueado por FK: desactiva en lugar de borrar |
 | "`x.com` is already used by another restaurant." | ese dominio ya está dado de alta |
 | "Your account has no restaurant assigned yet." | falta la fila en `restaurant_users` |
+| "Supabase Auth administration is not configured." | falta `SUPABASE_SECRET_KEY` |
+| "Owner invitations are not configured." | falta `APP_URL` |
 | "Saving the floor plan needs two extra columns…" | falta la migración `grid_x` / `grid_y` (§7.1) |
 | "Could not reach the reservations service." | n8n caído o sin red |
 | "The reservations service could not complete this request." | n8n respondió error |
@@ -529,7 +566,8 @@ restaurante. Si arreglas algo en un sitio, queda arreglado en los dos.
 
 ## 13. Lo que todavía no está hecho
 
-- Invitar usuarios / crear personal del restaurante (siguiente paso previsto).
+- Invitar personal adicional y administrar sus roles (el propietario ya se
+  invita y sustituye desde superadmin).
 - Facturación, Stripe, suscripciones.
 - Alta de dominios y despliegue de la web del restaurante.
 - Analítica e informes.

@@ -17,18 +17,25 @@ import { CheckIcon } from "@/components/icons";
 export function BasicsForm({
   initialName = "",
   initialDomain = "",
+  initialOwnerEmail = "",
   submitLabel,
   save,
   onSaved,
 }: {
   initialName?: string;
   initialDomain?: string;
+  initialOwnerEmail?: string;
   submitLabel: string;
-  save: (input: { name: string; domain: string }) => Promise<ActionResult<unknown>>;
+  save: (input: {
+    name: string;
+    domain: string;
+    ownerEmail: string;
+  }) => Promise<ActionResult<unknown>>;
   onSaved?: () => void;
 }) {
   const [name, setName] = useState(initialName);
   const [domain, setDomain] = useState(initialDomain);
+  const [ownerEmail, setOwnerEmail] = useState(initialOwnerEmail);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -42,7 +49,7 @@ export function BasicsForm({
     setError(null);
     setSaved(false);
 
-    const result = await save({ name, domain });
+    const result = await save({ name, domain, ownerEmail });
 
     setPending(false);
     if (result.ok) {
@@ -75,6 +82,25 @@ export function BasicsForm({
             value={domain}
             onChange={(event) => setDomain(event.target.value)}
             placeholder="https://www.restaurant.com"
+          />
+        </Field>
+
+        <Field
+          label="Owner email"
+          required
+          hint={
+            initialOwnerEmail
+              ? "Changing this sends a new password invitation and immediately removes the previous owner's access."
+              : "We will email the owner a secure link to create their password."
+          }
+        >
+          <Input
+            required
+            type="email"
+            autoComplete="email"
+            value={ownerEmail}
+            onChange={(event) => setOwnerEmail(event.target.value)}
+            placeholder="owner@restaurant.com"
           />
         </Field>
 
@@ -112,7 +138,9 @@ export function BasicsForm({
           type="submit"
           variant="primary"
           pending={pending}
-          disabled={!slugValid || name.trim().length === 0}
+          disabled={
+            !slugValid || name.trim().length === 0 || ownerEmail.trim().length === 0
+          }
         >
           {submitLabel}
         </Button>

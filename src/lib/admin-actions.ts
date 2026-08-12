@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireSuperadmin } from "@/lib/admin-data";
-import { errorMessage, type ActionResult } from "@/lib/errors";
+import { DataError, errorMessage, type ActionResult } from "@/lib/errors";
 import { isValidDomain, normalizeDomain } from "@/lib/slug";
 import {
   dbError,
@@ -13,6 +14,7 @@ import {
   writeCombination,
   writePeriod,
   writeSettings,
+  writeStrictTableCapacity,
   writeTable,
   type CombinationInput,
   type PeriodInput,
@@ -27,7 +29,8 @@ import {
  * URL. That is only safe because every function calls requireSuperadmin() first
  * — a restaurant user reaching these actions is redirected out before any write
  * — and because the shared writers still scope each statement by restaurant_id
- * under RLS. No service_role key is involved anywhere.
+ * under RLS. Owner invitations use a separate server-only Supabase client with
+ * the project's secret key, after the same superadmin check has succeeded.
  */
 
 const ADMIN_PATHS = ["/admin", "/admin/restaurants"];
@@ -58,6 +61,110 @@ async function run(
 export interface RestaurantBasicsInput {
   name: string;
   domain: string;
+  ownerEmail: string;
+}
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function ownerEmail(value: string): string | null {
+  const email = value.trim().toLowerCase();
+  return EMAIL.test(email) ? email : null;
+}
+
+function inviteRedirectUrl(): string {
+  const configured = process.env.APP_URL?.trim();
+  if (!configured) {
+    throw new DataError("Owner invitations are not configured. Add APP_URL.");
+  }
+
+  try {
+    const url = new URL("/set-password", configured);
+    if (url.protocol !== "https:" && url.hostname !== "localhost") throw new Error();
+    return url.toString();
+  } catch {
+    throw new DataError("APP_URL must be a valid HTTPS application URL.");
+  }
+}
+
+function inviteError(error: { code?: string; message?: string } | null): string {
+  const code = error?.code ?? "";
+  const message = error?.message?.toLowerCase() ?? "";
+  if (
+    code === "email_exists" ||
+    code === "user_already_exists" ||
+    message.includes("already been registered") ||
+    message.includes("already exists")
+  ) {
+    return "That email already belongs to an account. Use a new email address.";
+  }
+  if (code === "over_email_send_rate_limit") {
+    return "Supabase's email limit has been reached. Wait a moment and try again.";
+  }
+  return "Could not send the owner invitation. Please try again.";
+}
+
+async function inviteOwner(
+  admin: ReturnType<typeof createAdminClient>,
+  email: string,
+  restaurantName: string,
+  redirectTo: string
+) {
+  const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo,
+    data: {
+      restaurant_name: restaurantName,
+      account_role: "restaurant_owner",
+    },
+  });
+
+  if (error || !data.user) {
+    return { ok: false as const, error: inviteError(error) };
+  }
+  return { ok: true as const, userId: data.user.id };
+}
+
+async function removePreviousOwnerAccounts(
+  admin: ReturnType<typeof createAdminClient>,
+  previousOwnerIds: string[]
+) {
+  for (const userId of previousOwnerIds) {
+    const [membershipCheck, profileCheck] = await Promise.all([
+      admin
+        .from("restaurant_users")
+        .select("user_id", { count: "exact", head: true })
+        .eq("user_id", userId),
+      admin
+        .from("user_profiles")
+        .select("global_role")
+        .eq("id", userId)
+        .maybeSingle(),
+    ]);
+
+    if (membershipCheck.error || profileCheck.error) {
+      console.error(
+        "Could not verify whether replaced owner account is shared",
+        userId,
+        membershipCheck.error ?? profileCheck.error
+      );
+      continue;
+    }
+
+    // A shared account or superadmin must survive; only this restaurant's
+    // membership is removed. Ordinary single-restaurant accounts are deleted.
+    const isSuperadmin =
+      String(
+        (profileCheck.data as Record<string, unknown> | null)?.global_role ?? ""
+      ) ===
+      "superadmin";
+    if ((membershipCheck.count ?? 0) === 0 && !isSuperadmin) {
+      const { error } = await admin.auth.admin.deleteUser(userId);
+      if (error) {
+        // Access is already revoked by deleting restaurant_users. Keep the save
+        // successful even if Supabase leaves an inaccessible orphan to clean up.
+        console.error("Could not delete replaced restaurant owner", userId, error);
+      }
+    }
+  }
 }
 
 /**
@@ -84,6 +191,9 @@ export async function createRestaurant(
       };
     }
 
+    const email = ownerEmail(input.ownerEmail);
+    if (!email) return { ok: false, error: "Enter a valid owner email address." };
+
     const { data: existing } = await supabase
       .from("restaurants")
       .select("id, name")
@@ -97,7 +207,9 @@ export async function createRestaurant(
       };
     }
 
-    const { data, error } = await supabase
+    const redirectTo = inviteRedirectUrl();
+    const admin = createAdminClient();
+    const { data, error } = await admin
       .from("restaurants")
       .insert({ name, slug, active: false })
       .select("id")
@@ -106,6 +218,25 @@ export async function createRestaurant(
     if (error || !data) return { ok: false, error: dbError(error) };
 
     const id = String((data as { id: unknown }).id);
+    const invitation = await inviteOwner(admin, email, name, redirectTo);
+    if (!invitation.ok) {
+      await admin.from("restaurants").delete().eq("id", id);
+      return invitation;
+    }
+
+    const { userId } = invitation;
+    const { error: membershipError } = await admin.from("restaurant_users").insert({
+      user_id: userId,
+      restaurant_id: id,
+      role: "owner",
+    });
+
+    if (membershipError) {
+      await admin.from("restaurants").delete().eq("id", id);
+      await admin.auth.admin.deleteUser(userId);
+      return { ok: false, error: "Could not assign the owner. Please try again." };
+    }
+
     revalidateRestaurant(id);
     return { ok: true, data: { id } };
   } catch (error) {
@@ -134,6 +265,9 @@ export async function updateRestaurantBasics(
       };
     }
 
+    const email = ownerEmail(input.ownerEmail);
+    if (!email) return { ok: false, error: "Enter a valid owner email address." };
+
     const { data: clash } = await supabase
       .from("restaurants")
       .select("id")
@@ -148,12 +282,84 @@ export async function updateRestaurantBasics(
       };
     }
 
+    const admin = createAdminClient();
+    const { data: ownerRows, error: ownerRowsError } = await admin
+      .from("restaurant_users")
+      .select("user_id")
+      .eq("restaurant_id", restaurantId)
+      .eq("role", "owner");
+
+    if (ownerRowsError) {
+      return { ok: false, error: "Could not load the current owner." };
+    }
+
+    const previousOwnerIds = (ownerRows ?? [])
+      .map((row) => String(row.user_id ?? ""))
+      .filter(Boolean);
+    const previousOwners = await Promise.all(
+      previousOwnerIds.map((id) => admin.auth.admin.getUserById(id))
+    );
+    const emailUnchanged = previousOwners.some(
+      ({ data }) => data.user?.email?.toLowerCase() === email
+    );
+
+    if (emailUnchanged) {
+      const { error } = await supabase
+        .from("restaurants")
+        .update({ name, slug })
+        .eq("id", restaurantId);
+      if (error) return { ok: false, error: dbError(error) };
+      return { ok: true, data: undefined };
+    }
+
+    const invitation = await inviteOwner(admin, email, name, inviteRedirectUrl());
+    if (!invitation.ok) return invitation;
+
+    const newOwnerId = invitation.userId;
+    const { error: membershipError } = await admin.from("restaurant_users").insert({
+      user_id: newOwnerId,
+      restaurant_id: restaurantId,
+      role: "owner",
+    });
+    if (membershipError) {
+      await admin.auth.admin.deleteUser(newOwnerId);
+      return { ok: false, error: "Could not assign the new owner. Please try again." };
+    }
+
     const { error } = await supabase
       .from("restaurants")
       .update({ name, slug })
       .eq("id", restaurantId);
 
-    if (error) return { ok: false, error: dbError(error) };
+    if (error) {
+      await admin
+        .from("restaurant_users")
+        .delete()
+        .eq("restaurant_id", restaurantId)
+        .eq("user_id", newOwnerId);
+      await admin.auth.admin.deleteUser(newOwnerId);
+      return { ok: false, error: dbError(error) };
+    }
+
+    if (previousOwnerIds.length > 0) {
+      const { error: removalError } = await admin
+        .from("restaurant_users")
+        .delete()
+        .eq("restaurant_id", restaurantId)
+        .eq("role", "owner")
+        .in("user_id", previousOwnerIds);
+      if (removalError) {
+        await admin
+          .from("restaurant_users")
+          .delete()
+          .eq("restaurant_id", restaurantId)
+          .eq("user_id", newOwnerId);
+        await admin.auth.admin.deleteUser(newOwnerId);
+        return { ok: false, error: "Could not replace the current owner." };
+      }
+      await removePreviousOwnerAccounts(admin, previousOwnerIds);
+    }
+
     return { ok: true, data: undefined };
   });
 }
@@ -182,6 +388,13 @@ export async function saveSettingsFor(
   input: SettingsInput
 ): Promise<ActionResult> {
   return run(restaurantId, () => writeSettings(restaurantId, input));
+}
+
+export async function saveStrictTableCapacityFor(
+  restaurantId: string,
+  enabled: boolean
+): Promise<ActionResult> {
+  return run(restaurantId, () => writeStrictTableCapacity(restaurantId, enabled));
 }
 
 // ------------------------------------------------------- step 3: schedule
