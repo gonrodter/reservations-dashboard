@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/lib/actions";
 import {
@@ -11,10 +11,27 @@ import {
   LogoMark,
   LogoutIcon,
   SettingsIcon,
+  Spinner,
   StarDateIcon,
   TableIcon,
   WeekIcon,
 } from "@/components/icons";
+
+/**
+ * A tapped destination has to answer immediately, even though its data is
+ * fetched on the server: the icon becomes a spinner for as long as the
+ * navigation is in flight. Only meaningful inside a `Link`.
+ */
+function NavIcon({
+  icon: Icon,
+  size,
+}: {
+  icon: (props: { size?: number }) => React.ReactElement;
+  size: number;
+}) {
+  const { pending } = useLinkStatus();
+  return pending ? <Spinner size={size} /> : <Icon size={size} />;
+}
 
 export interface NavItem {
   href: string;
@@ -93,7 +110,7 @@ export function Shell({
                         : "text-muted hover:bg-sunken hover:text-ink"
                     }`}
                   >
-                    <Icon size={17} />
+                    <NavIcon icon={Icon} size={17} />
                   </Link>
                 ))}
               </div>
@@ -160,13 +177,13 @@ export function Shell({
                 key={href}
                 href={href}
                 aria-current={isActive(pathname, href) ? "page" : undefined}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
                   isActive(pathname, href)
                     ? "bg-ink text-surface"
                     : "bg-sunken text-muted"
                 }`}
               >
-                <Icon size={13} />
+                <NavIcon icon={Icon} size={13} />
                 {label}
               </Link>
             ))}

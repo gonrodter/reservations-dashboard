@@ -60,7 +60,7 @@ export function TopBar({
           <button
             type="button"
             onClick={() => onNew()}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[13px] font-medium text-surface transition-opacity hover:opacity-85"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[13px] font-medium text-surface transition-all hover:opacity-85 active:scale-[0.97]"
           >
             <PlusIcon size={14} />
             <span className="hidden sm:inline">{newLabel}</span>

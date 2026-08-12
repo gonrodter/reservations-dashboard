@@ -26,9 +26,18 @@ export default async function proxy(request: NextRequest) {
   );
 
   // Do not run code between createServerClient and supabase.auth.getUser().
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // A throw here would be a bare 500 with no error boundary above it, which is
+  // what the first request after signing in used to hit while the freshly
+  // rotated refresh token was still settling. Let the request through instead:
+  // every page resolves the session again and redirects if there is none.
+  let user = null;
+  try {
+    ({
+      data: { user },
+    } = await supabase.auth.getUser());
+  } catch {
+    return supabaseResponse;
+  }
 
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
   const isPasswordSetupPage = request.nextUrl.pathname.startsWith("/set-password");

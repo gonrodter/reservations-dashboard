@@ -20,7 +20,7 @@ export function ReservationCard({
       type="button"
       onClick={() => onSelect(booking)}
       aria-pressed={selected}
-      className={`w-full rounded-xl border bg-surface p-3 text-left shadow-card transition-colors ${
+      className={`w-full rounded-xl border bg-surface p-3 text-left shadow-card transition-all active:scale-[0.99] active:bg-sunken ${
         selected
           ? "border-info ring-2 ring-info-soft"
           : "border-line hover:border-line-strong"

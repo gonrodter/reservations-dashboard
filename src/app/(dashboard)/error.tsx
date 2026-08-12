@@ -3,10 +3,10 @@
 import { AlertIcon } from "@/components/icons";
 
 export default function DashboardError({
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
@@ -20,7 +20,7 @@ export default function DashboardError({
       </p>
       <button
         type="button"
-        onClick={reset}
+        onClick={retry}
         className="mt-2 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-surface hover:opacity-85"
       >
         Reintentar

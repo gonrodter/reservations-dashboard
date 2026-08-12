@@ -34,7 +34,7 @@ export function Button({
     <button
       {...props}
       disabled={props.disabled || pending}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-opacity disabled:opacity-40 ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all active:scale-[0.98] disabled:opacity-40 ${VARIANTS[variant]} ${className}`}
     >
       {pending ? <Spinner size={13} /> : icon}
       {children}
