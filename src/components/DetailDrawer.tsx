@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Booking } from "@/lib/types";
 import { StatusChip } from "@/components/StatusChip";
+import { TablePill } from "@/components/TablePill";
 import { formatDayLabel } from "@/lib/dates";
 import {
   CalendarIcon,
@@ -204,13 +205,7 @@ export function DetailDrawer({
               {booking.tables.length > 0 ? (
                 <span className="flex flex-wrap gap-1">
                   {booking.tables.map((table) => (
-                    <span
-                      key={table.id}
-                      className="rounded-md border border-line bg-sunken px-1.5 py-0.5 text-xs font-medium"
-                    >
-                      {table.name}
-                      {table.capacity ? ` · ${table.capacity}` : ""}
-                    </span>
+                    <TablePill key={table.id} table={table} withCapacity />
                   ))}
                 </span>
               ) : (

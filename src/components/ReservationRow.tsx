@@ -3,6 +3,8 @@
 import type { Booking } from "@/lib/types";
 import { isCancelled } from "@/lib/types";
 import { StatusChip } from "@/components/StatusChip";
+import { TablePill } from "@/components/TablePill";
+import { bookingColour } from "@/lib/table-colours";
 import { TableIcon, UsersIcon } from "@/components/icons";
 
 /**
@@ -22,18 +24,28 @@ export function ReservationRow({
   onSelect: (booking: Booking) => void;
 }) {
   const cancelled = isCancelled(booking);
+  const colour = bookingColour(booking.tables);
 
   return (
     <button
       type="button"
       onClick={() => onSelect(booking)}
       aria-pressed={selected}
-      className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-sunken ${
+      className={`relative flex w-full items-center gap-3 py-2.5 pl-4 pr-3 text-left transition-colors hover:bg-sunken ${
         first ? "" : "border-t border-line"
       } ${cancelled ? "opacity-60" : ""} ${
         selected ? "bg-info-soft/40" : "bg-surface"
       }`}
     >
+      {/* The table's colour, so the list scans in the same terms as the floor. */}
+      {colour && (
+        <span
+          aria-hidden
+          className="absolute inset-y-0 left-0 w-1.5"
+          style={{ backgroundColor: colour.ink }}
+        />
+      )}
+
       <span
         className={`w-11 shrink-0 text-[13px] font-semibold tabular-nums ${
           cancelled ? "line-through decoration-danger/60" : ""
@@ -59,12 +71,7 @@ export function ReservationRow({
         <span className="hidden items-center gap-1 text-muted md:inline-flex">
           <TableIcon size={13} />
           {booking.tables.map((table) => (
-            <span
-              key={table.id}
-              className="rounded-md border border-line bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-ink-soft"
-            >
-              {table.name}
-            </span>
+            <TablePill key={table.id} table={table} />
           ))}
         </span>
       )}

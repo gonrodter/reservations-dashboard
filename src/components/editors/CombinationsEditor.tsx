@@ -8,6 +8,7 @@ import { CombinationDialog } from "@/components/CombinationDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { Button, Card, ConfirmDialog, ErrorNote } from "@/components/ui";
 import { StateChip } from "@/components/editors/TablesEditor";
+import { TablePill } from "@/components/TablePill";
 import { LayersIcon, PencilIcon, PlusIcon, Spinner, TrashIcon } from "@/components/icons";
 
 export interface CombinationsActions {
@@ -103,14 +104,19 @@ export function CombinationsEditor({
                   <span className="text-[11px] text-muted">
                     {combination.capacity ?? "?"} plazas combinadas ·
                   </span>
-                  {combination.memberIds.map((id) => (
-                    <span
-                      key={id}
-                      className="rounded-md border border-line bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-ink-soft"
-                    >
-                      {tableById.get(id)?.name ?? "Mesa eliminada"}
-                    </span>
-                  ))}
+                  {combination.memberIds.map((id) => {
+                    const member = tableById.get(id);
+                    return member ? (
+                      <TablePill key={id} table={member} />
+                    ) : (
+                      <span
+                        key={id}
+                        className="rounded-md border border-line bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-muted"
+                      >
+                        Mesa eliminada
+                      </span>
+                    );
+                  })}
                 </span>
               </span>
 

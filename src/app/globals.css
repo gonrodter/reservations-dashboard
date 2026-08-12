@@ -107,8 +107,9 @@ body {
   position: absolute;
   inset: 0;
   transform: translateZ(var(--h));
-  background: var(--color-surface);
-  border: 1px solid var(--color-line-strong);
+  /* Each table carries its own colour; see lib/table-colours.ts. */
+  background: var(--table-fill, var(--color-surface));
+  border: 1px solid var(--table-line, var(--color-line-strong));
   border-radius: 7px;
   transition: border-color 150ms ease, background-color 150ms ease,
     box-shadow 150ms ease;
@@ -143,8 +144,11 @@ body {
   box-shadow: -12px 12px 0 0 rgba(23, 24, 26, 0.06);
 }
 
+/* A table in use is filled with the deeper tone of its own colour, so busy
+   and free read apart at a glance without losing which table is which. */
 .iso-block[data-state="occupied"] .f-top {
-  background: #edeef1;
+  background: var(--table-line, #edeef1);
+  border-color: var(--table-ink, var(--color-line-strong));
 }
 
 .iso-block[data-selected="true"] .f-top {

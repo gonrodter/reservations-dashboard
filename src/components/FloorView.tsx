@@ -17,6 +17,7 @@ import {
   type GridBasis,
   type GridPosition,
 } from "@/lib/floor-grid";
+import { tableColour } from "@/lib/table-colours";
 import { EmptyState } from "@/components/EmptyState";
 import { FitIcon, Spinner, TableIcon } from "@/components/icons";
 
@@ -732,6 +733,7 @@ export function FloorView({
 
             {states.map(({ table, seated, upcoming }) => {
               const size = blockSize(table.capacity);
+              const colour = tableColour(table.id);
               const booking = seated ?? upcoming[0] ?? null;
               const tableBookings = seated ? [seated, ...upcoming] : upcoming;
               const selected = tableBookings.some(
@@ -775,6 +777,9 @@ export function FloorView({
                         marginLeft: -size / 2,
                         marginTop: -size / 2,
                         "--h": "16px",
+                        "--table-fill": colour.fill,
+                        "--table-line": colour.line,
+                        "--table-ink": colour.ink,
                         touchAction: arranging ? "none" : undefined,
                       } as React.CSSProperties
                     }
@@ -813,7 +818,10 @@ export function FloorView({
                       <span className="f-e" />
                       <span className="f-top">
                         {/* Label lies flat on the top face, like the reference map */}
-                        <span className="absolute bottom-1 left-2 text-[11px] font-medium text-muted">
+                        <span
+                          className="absolute bottom-1 left-2 text-[11px] font-semibold"
+                          style={{ color: colour.ink }}
+                        >
                           {table.name}
                         </span>
                       </span>

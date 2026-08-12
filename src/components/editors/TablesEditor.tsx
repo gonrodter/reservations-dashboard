@@ -7,6 +7,7 @@ import type { ActionResult } from "@/lib/errors";
 import { TableDialog } from "@/components/TableDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { Button, Card, ConfirmDialog, ErrorNote } from "@/components/ui";
+import { tableColour } from "@/lib/table-colours";
 import { GridIcon, PencilIcon, PlusIcon, Spinner, TrashIcon } from "@/components/icons";
 
 export interface TablesActions {
@@ -120,6 +121,17 @@ export function TablesEditor({
                     index > 0 ? "border-t border-line" : ""
                   } ${table.active ? "" : "bg-sunken/40"}`}
                 >
+                  {/* The colour this table wears on the floor plan and on
+                      every reservation assigned to it. */}
+                  <span
+                    aria-hidden
+                    className="size-3 shrink-0 rounded-full border"
+                    style={{
+                      backgroundColor: tableColour(table.id).fill,
+                      borderColor: tableColour(table.id).ink,
+                    }}
+                  />
+
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-medium">
                       {table.name}

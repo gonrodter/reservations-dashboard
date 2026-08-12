@@ -6,6 +6,7 @@ import { saveCombination, type CombinationInput } from "@/lib/config-actions";
 import type { ActionResult } from "@/lib/errors";
 import { Button, ErrorNote, Field, Input, Modal, Toggle } from "@/components/ui";
 import { CheckIcon } from "@/components/icons";
+import { tableColour } from "@/lib/table-colours";
 
 /**
  * Combinations are always explicit: staff pick exactly which physical tables
@@ -151,7 +152,15 @@ export function CombinationDialog({
                                 : "border-line bg-surface hover:border-line-strong"
                             } ${table.active ? "" : "opacity-60"}`}
                           >
-                            {picked && <CheckIcon size={11} />}
+                            {picked ? (
+                              <CheckIcon size={11} />
+                            ) : (
+                              <span
+                                aria-hidden
+                                className="size-2 rounded-full"
+                                style={{ backgroundColor: tableColour(table.id).ink }}
+                              />
+                            )}
                             {table.name}
                             <span
                               className={picked ? "text-surface/70" : "text-muted"}

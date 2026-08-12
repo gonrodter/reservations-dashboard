@@ -18,6 +18,7 @@ import {
 import { TopBar } from "@/components/TopBar";
 import { EmptyState } from "@/components/EmptyState";
 import { ReservationRow } from "@/components/ReservationRow";
+import { bookingColour } from "@/lib/table-colours";
 import { Card, Segmented } from "@/components/ui";
 import {
   CalendarIcon,
@@ -169,6 +170,9 @@ function BookingBlock({
 }) {
   const cancelled = isCancelled(item.booking);
   const width = 100 / item.lanes;
+  // The block takes the colour of its table, so a service reads as which
+  // tables are busy when. Selection and cancellation override it.
+  const colour = !selected && !cancelled ? bookingColour(item.booking.tables) : null;
 
   return (
     <button
@@ -187,6 +191,10 @@ function BookingBlock({
         height: Math.max(((item.endMin - item.startMin) / 60) * HOUR_HEIGHT - 2, 22),
         left: `calc(${item.lane * width}% + 2px)`,
         width: `calc(${width}% - 4px)`,
+        ...(colour && {
+          backgroundColor: colour.fill,
+          borderColor: colour.line,
+        }),
       }}
     >
       <span className="flex items-baseline gap-1">
@@ -203,7 +211,10 @@ function BookingBlock({
         {item.booking.name}
       </span>
       {!compact && item.booking.tables.length > 0 && (
-        <span className="block truncate text-[10px] text-muted">
+        <span
+          className="block truncate text-[10px] font-medium"
+          style={{ color: colour?.ink ?? "var(--color-muted)" }}
+        >
           {item.booking.tables.map((table) => table.name).join(", ")}
         </span>
       )}

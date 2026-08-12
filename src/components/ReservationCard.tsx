@@ -2,6 +2,8 @@
 
 import type { Booking } from "@/lib/types";
 import { StatusChip } from "@/components/StatusChip";
+import { TablePill } from "@/components/TablePill";
+import { bookingColour } from "@/lib/table-colours";
 import { PhoneIcon, TableIcon, UsersIcon } from "@/components/icons";
 
 export function ReservationCard({
@@ -14,18 +16,29 @@ export function ReservationCard({
   onSelect: (booking: Booking) => void;
 }) {
   const cancelled = booking.status === "cancelled" || booking.status === "no_show";
+  const colour = bookingColour(booking.tables);
 
   return (
     <button
       type="button"
       onClick={() => onSelect(booking)}
       aria-pressed={selected}
-      className={`w-full rounded-xl border bg-surface p-3 text-left shadow-card transition-all active:scale-[0.99] active:bg-sunken ${
+      className={`relative w-full overflow-hidden rounded-xl border bg-surface p-3 pl-4 text-left shadow-card transition-all active:scale-[0.99] active:bg-sunken ${
         selected
           ? "border-info ring-2 ring-info-soft"
           : "border-line hover:border-line-strong"
       } ${cancelled ? "opacity-60" : ""}`}
     >
+      {/* The table's colour down the edge; a reservation with no table has no
+          bar, which is itself the signal that it still needs one. */}
+      {colour && (
+        <span
+          aria-hidden
+          className="absolute inset-y-0 left-0 w-1.5"
+          style={{ backgroundColor: colour.ink }}
+        />
+      )}
+
       <div className="flex items-center justify-between gap-2">
         <span
           className={`text-sm font-semibold tabular-nums ${
@@ -56,12 +69,7 @@ export function ReservationCard({
           <span className="ml-auto inline-flex items-center gap-1">
             <TableIcon size={12} />
             {booking.tables.map((table) => (
-              <span
-                key={table.id}
-                className="rounded-md border border-line bg-sunken px-1.5 py-0.5 font-medium text-ink-soft"
-              >
-                {table.name}
-              </span>
+              <TablePill key={table.id} table={table} />
             ))}
           </span>
         )}
