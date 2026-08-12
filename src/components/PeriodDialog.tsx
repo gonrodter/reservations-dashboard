@@ -55,10 +55,10 @@ export function PeriodDialog({
   }
 
   return (
-    <Modal title={period ? "Edit booking hours" : "Add booking hours"} onClose={onClose}>
+    <Modal title={period ? "Editar horario de reservas" : "Añadir horario de reservas"} onClose={onClose}>
       <form onSubmit={handleSubmit} className="contents">
         <div className="thin-scroll flex-1 space-y-4 overflow-y-auto px-4 py-4">
-          <Field label="Day" required>
+          <Field label="Día" required>
             <Select value={day} onChange={(event) => setDay(Number(event.target.value))}>
               {DAY_ORDER.map((index) => (
                 <option key={index} value={index}>
@@ -69,7 +69,7 @@ export function PeriodDialog({
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="First booking" required>
+            <Field label="Primera reserva" required>
               <Input
                 required
                 type="time"
@@ -77,7 +77,7 @@ export function PeriodDialog({
                 onChange={(event) => setStartTime(event.target.value)}
               />
             </Field>
-            <Field label="Last booking" required>
+            <Field label="Última reserva" required>
               <Input
                 required
                 type="time"
@@ -90,8 +90,8 @@ export function PeriodDialog({
           {/* spans_next_day is derived, never asked about in database terms. */}
           {overnight && (
             <p className="rounded-lg bg-info-soft px-3 py-2 text-xs leading-5 text-info">
-              This service runs past midnight, finishing at {endTime} the
-              following morning. That is saved for you.
+              Este servicio termina después de medianoche, a las {endTime} de la
+              mañana siguiente. Se guardará automáticamente.
             </p>
           )}
 
@@ -99,10 +99,10 @@ export function PeriodDialog({
             <Toggle
               checked={active}
               onChange={setActive}
-              label={active ? "Taking bookings" : "Paused"}
+              label={active ? "Acepta reservas" : "En pausa"}
             />
             <p className="mt-1 text-[11px] leading-4 text-muted">
-              Pause a service to stop new bookings without losing the hours.
+              Pausa un servicio para dejar de aceptar reservas sin perder el horario.
             </p>
           </div>
 
@@ -111,10 +111,10 @@ export function PeriodDialog({
 
         <footer className="flex gap-2 border-t border-line p-3">
           <Button type="button" onClick={onClose} className="flex-1 py-2">
-            Discard
+            Descartar
           </Button>
           <Button type="submit" variant="primary" pending={pending} className="flex-1 py-2">
-            {period ? "Save hours" : "Add hours"}
+            {period ? "Guardar horario" : "Añadir horario"}
           </Button>
         </footer>
       </form>

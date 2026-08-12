@@ -42,7 +42,7 @@ export function SettingsForm({
   fallbackTimezone,
   showName = true,
   prefill = true,
-  submitLabel = "Save settings",
+  submitLabel = "Guardar ajustes",
   save,
   onSaved,
 }: {
@@ -119,24 +119,24 @@ export function SettingsForm({
   const noticeHours = Number(minNotice) / 60;
   const noticeHint =
     minNotice === "" || !Number.isFinite(noticeHours)
-      ? "How soon before a sitting a guest may still book."
+      ? "Con cuánta antelación puede reservar un cliente."
       : noticeHours === 0
-        ? "Guests can book right up to the sitting."
+        ? "Los clientes pueden reservar hasta la hora del servicio."
         : noticeHours < 1
-          ? `About ${Math.round(noticeHours * 60)} minutes ahead.`
+          ? `Unos ${Math.round(noticeHours * 60)} minutos de antelación.`
           : `About ${noticeHours % 1 === 0 ? noticeHours : noticeHours.toFixed(1)} ${
-              noticeHours === 1 ? "hour" : "hours"
-            } ahead.`;
+              noticeHours === 1 ? "hora" : "horas"
+            } de antelación.`;
 
   return (
     <form onSubmit={handleSubmit}>
       <Card className="divide-y divide-line">
         <div className="space-y-4 p-4">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {showName ? "The restaurant" : "Where the restaurant is"}
+            {showName ? "El restaurante" : "Ubicación del restaurante"}
           </h3>
           {showName && (
-            <Field label="Restaurant name" required>
+            <Field label="Nombre del restaurante" required>
               <Input
                 required
                 value={restaurantName}
@@ -145,9 +145,9 @@ export function SettingsForm({
             </Field>
           )}
           <Field
-            label="Timezone"
+            label="Zona horaria"
             required
-            hint="All reservation times are shown and booked in this timezone."
+            hint="Todas las horas de reserva se muestran y registran en esta zona horaria."
           >
             <Input
               required
@@ -166,16 +166,16 @@ export function SettingsForm({
 
         <div className="space-y-4 p-4">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Booking slots
+            Franjas de reserva
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              label="Time between available slots (minutes)"
+              label="Intervalo entre franjas disponibles (minutos)"
               required
               hint={
                 slotInterval
-                  ? `Guests see a time every ${slotInterval} minutes.`
-                  : `Commonly ${SUGGESTED.slotIntervalMinutes} minutes.`
+                  ? `Los clientes ven una hora cada ${slotInterval} minutos.`
+                  : `Lo habitual son ${SUGGESTED.slotIntervalMinutes} minutos.`
               }
             >
               <Input
@@ -190,12 +190,12 @@ export function SettingsForm({
               />
             </Field>
             <Field
-              label="Default reservation duration (minutes)"
+              label="Duración predeterminada de la reserva (minutos)"
               required
               hint={
                 duration
-                  ? "How long a table is held for one sitting."
-                  : `Commonly ${SUGGESTED.defaultBookingDurationMinutes} minutes.`
+                  ? "Cuánto tiempo se reserva una mesa para un servicio."
+                  : `Lo habitual son ${SUGGESTED.defaultBookingDurationMinutes} minutos.`
               }
             >
               <Input
@@ -214,13 +214,13 @@ export function SettingsForm({
 
         <div className="space-y-4 p-4">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-            What guests can book online
+            Reservas en línea
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              label="Maximum online party size"
+              label="Tamaño máximo del grupo en línea"
               required
-              hint="Bigger groups have to call the restaurant."
+              hint="Los grupos más grandes deben llamar al restaurante."
             >
               <Input
                 required
@@ -233,7 +233,7 @@ export function SettingsForm({
               />
             </Field>
             <Field
-              label="Minimum booking notice (minutes)"
+              label="Antelación mínima de reserva (minutos)"
               required
               hint={noticeHint}
             >
@@ -250,9 +250,9 @@ export function SettingsForm({
             </Field>
           </div>
           <Field
-            label="How far in advance customers can book (days)"
+            label="Con cuánta antelación pueden reservar (días)"
             required
-            hint="Bookings further out than this are not offered."
+            hint="No se ofrecen reservas con una antelación mayor."
           >
             <Input
               required
@@ -269,12 +269,12 @@ export function SettingsForm({
             <Toggle
               checked={strictTableCapacity}
               onChange={setStrictTableCapacity}
-              label="Match parties closely to table capacity"
+              label="Ajustar los grupos a la capacidad de las mesas"
             />
             <p className="mt-1 pl-10 text-[11px] leading-4 text-muted">
-              When on, a party can only book a table with the exact number of
-              seats or one spare seat. For example, 2 guests cannot occupy a
-              4-seat table.
+              Al activarlo, un grupo solo puede reservar una mesa con el número
+              exacto de plazas o una plaza libre. Por ejemplo, 2 comensales no
+              pueden ocupar una mesa de 4 plazas.
             </p>
           </div>
         </div>
@@ -288,7 +288,7 @@ export function SettingsForm({
         </Button>
         {saved && !pending && (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-ok">
-            <CheckIcon size={13} /> Saved
+            <CheckIcon size={13} /> Guardado
           </span>
         )}
       </div>

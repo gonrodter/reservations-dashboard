@@ -9,7 +9,7 @@ import { CalendarView, type CalendarMode } from "@/components/CalendarView";
 import { addDays, todayISO, weekStart } from "@/lib/dates";
 
 export const metadata: Metadata = {
-  title: "Calendar",
+  title: "Calendario",
 };
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;

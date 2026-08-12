@@ -5,7 +5,7 @@ import { RestaurantWizard } from "@/components/admin/RestaurantWizard";
 import { isWizardStep, type WizardStep } from "@/lib/wizard-steps";
 
 export const metadata: Metadata = {
-  title: "Restaurant setup · Admin",
+  title: "Configuración del restaurante · Administración",
 };
 
 /**

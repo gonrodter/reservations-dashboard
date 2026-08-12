@@ -25,14 +25,14 @@ export type ConfigTable =
 
 /** Postgres errors, translated for the person looking at the form. */
 export function dbError(error: { code?: string; message?: string } | null): string {
-  if (error?.code === "23505") return "That already exists. Use a different name.";
+  if (error?.code === "23505") return "Eso ya existe. Usa un nombre diferente.";
   if (error?.code === "23503") {
-    return "That change conflicts with existing records. Take it out of service instead.";
+    return "Ese cambio entra en conflicto con registros existentes. Retíralo del servicio en su lugar.";
   }
   if (error?.code === "42501") {
-    return "You do not have permission to change this setting.";
+    return "No tienes permiso para cambiar este ajuste.";
   }
-  return "Could not save your changes. Please try again.";
+  return "No se pudieron guardar los cambios. Inténtalo de nuevo.";
 }
 
 function clampInt(
@@ -64,11 +64,11 @@ export async function writeTable(
   const supabase = await createClient();
 
   const name = input.name.trim();
-  if (!name) return { ok: false, error: "Give the table a name." };
+  if (!name) return { ok: false, error: "Ponle un nombre a la mesa." };
 
   const capacity = clampInt(input.capacity, 1, 50);
   if (!capacity.ok) {
-    return { ok: false, error: "Seats must be a whole number between 1 and 50." };
+    return { ok: false, error: "Las plazas deben ser un número entero entre 1 y 50." };
   }
 
   const values = {
@@ -109,16 +109,16 @@ export async function writeCombination(
   const supabase = await createClient();
 
   const name = input.name.trim();
-  if (!name) return { ok: false, error: "Give the combination a name." };
+  if (!name) return { ok: false, error: "Ponle un nombre a la combinación." };
 
   const memberIds = [...new Set(input.memberIds.filter(Boolean))];
   if (memberIds.length < 2) {
-    return { ok: false, error: "Pick at least two tables to join." };
+    return { ok: false, error: "Elige al menos dos mesas para unir." };
   }
 
   const capacity = clampInt(input.capacity, 1, 200);
   if (!capacity.ok) {
-    return { ok: false, error: "Seats must be a whole number between 1 and 200." };
+    return { ok: false, error: "Las plazas deben ser un número entero entre 1 y 200." };
   }
 
   // Members must belong to this restaurant. Checked server-side so a tampered
@@ -133,7 +133,7 @@ export async function writeCombination(
   if ((owned ?? []).length !== memberIds.length) {
     return {
       ok: false,
-      error: "One of those tables does not belong to this restaurant.",
+      error: "Una de esas mesas no pertenece a este restaurante.",
     };
   }
 
@@ -194,13 +194,13 @@ export async function writePeriod(
   const supabase = await createClient();
 
   if (input.dayOfWeek < 0 || input.dayOfWeek > 6) {
-    return { ok: false, error: "Pick a day of the week." };
+    return { ok: false, error: "Elige un día de la semana." };
   }
   if (!TIME.test(input.startTime) || !TIME.test(input.endTime)) {
-    return { ok: false, error: "Enter both a start and an end time." };
+    return { ok: false, error: "Introduce una hora de inicio y otra de fin." };
   }
   if (input.startTime === input.endTime) {
-    return { ok: false, error: "The start and end time cannot be the same." };
+    return { ok: false, error: "La hora de inicio y la de fin no pueden ser iguales." };
   }
 
   // An end time at or before the start means service runs past midnight.
@@ -243,7 +243,7 @@ export async function writeSpecialDate(
 ): Promise<ActionResult> {
   const supabase = await createClient();
 
-  if (!DATE.test(input.date)) return { ok: false, error: "Pick a date." };
+  if (!DATE.test(input.date)) return { ok: false, error: "Elige una fecha." };
 
   let startTime: string | null = null;
   let endTime: string | null = null;
@@ -253,11 +253,11 @@ export async function writeSpecialDate(
     if (!TIME.test(input.startTime) || !TIME.test(input.endTime)) {
       return {
         ok: false,
-        error: "Enter the hours for this date, or mark the restaurant as closed.",
+        error: "Introduce el horario para esta fecha o marca el restaurante como cerrado.",
       };
     }
     if (input.startTime === input.endTime) {
-      return { ok: false, error: "The start and end time cannot be the same." };
+      return { ok: false, error: "La hora de inicio y la de fin no pueden ser iguales." };
     }
     startTime = input.startTime;
     endTime = input.endTime;
@@ -307,30 +307,30 @@ export async function writeSettings(
   const supabase = await createClient();
 
   const name = input.restaurantName.trim();
-  if (!name) return { ok: false, error: "The restaurant needs a name." };
+  if (!name) return { ok: false, error: "El restaurante necesita un nombre." };
 
   const timezone = input.timezone.trim();
-  if (!timezone) return { ok: false, error: "Choose the restaurant's timezone." };
+  if (!timezone) return { ok: false, error: "Elige la zona horaria del restaurante." };
   try {
     new Intl.DateTimeFormat("en-GB", { timeZone: timezone });
   } catch {
-    return { ok: false, error: "That is not a valid timezone." };
+    return { ok: false, error: "Esa zona horaria no es válida." };
   }
   if (typeof input.strictTableCapacity !== "boolean") {
-    return { ok: false, error: "Choose a valid table assignment rule." };
+    return { ok: false, error: "Elige una regla válida para asignar mesas." };
   }
 
   const checks: [keyof SettingsInput, number, number, string][] = [
-    ["slotIntervalMinutes", 5, 240, "Time between slots must be 5 to 240 minutes."],
+    ["slotIntervalMinutes", 5, 240, "El intervalo entre franjas debe ser de 5 a 240 minutos."],
     [
       "defaultBookingDurationMinutes",
       15,
       600,
-      "Reservation duration must be 15 to 600 minutes.",
+      "La duración de la reserva debe ser de 15 a 600 minutos.",
     ],
-    ["maxOnlinePartySize", 1, 100, "Maximum online party must be 1 to 100 guests."],
-    ["minAdvanceMinutes", 0, 10080, "Minimum notice must be 0 to 10080 minutes."],
-    ["maxAdvanceDays", 1, 730, "Booking window must be 1 to 730 days."],
+    ["maxOnlinePartySize", 1, 100, "El grupo máximo en línea debe ser de 1 a 100 comensales."],
+    ["minAdvanceMinutes", 0, 10080, "La antelación mínima debe ser de 0 a 10.080 minutos."],
+    ["maxAdvanceDays", 1, 730, "El plazo de reserva debe ser de 1 a 730 días."],
   ];
 
   const numbers: Record<string, number> = {};
@@ -365,7 +365,7 @@ export async function writeStrictTableCapacity(
   enabled: boolean
 ): Promise<ActionResult> {
   if (typeof enabled !== "boolean") {
-    return { ok: false, error: "Choose a valid table assignment rule." };
+    return { ok: false, error: "Elige una regla válida para asignar mesas." };
   }
   const supabase = await createClient();
   const { error } = await supabase
@@ -423,7 +423,7 @@ export async function writeTableLayout(
     const x = clampInt(position.x, 0, gridSize - 1);
     const y = clampInt(position.y, 0, gridSize - 1);
     if (!position.id || !x.ok || !y.ok) {
-      return { ok: false, error: "That position is outside the floor plan." };
+      return { ok: false, error: "Esa posición está fuera del plano de sala." };
     }
   }
 
@@ -437,7 +437,7 @@ export async function writeTableLayout(
 
   if (ownedError) return { ok: false, error: dbError(ownedError) };
   if ((owned ?? []).length !== ids.length) {
-    return { ok: false, error: "One of those tables is no longer available." };
+    return { ok: false, error: "Una de esas mesas ya no está disponible." };
   }
 
   const results = await Promise.all(
@@ -456,7 +456,7 @@ export async function writeTableLayout(
       return {
         ok: false,
         error:
-          "Saving the floor plan needs two extra columns on the tables. Ask your administrator to add grid_x and grid_y, then try again.",
+          "Para guardar el plano hacen falta dos columnas adicionales en las mesas. Pide al administrador que añada grid_x y grid_y e inténtalo de nuevo.",
       };
     }
     return { ok: false, error: dbError(failed) };

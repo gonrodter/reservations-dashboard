@@ -4,7 +4,7 @@ import { SpecialDatesView } from "@/components/SpecialDatesView";
 import { todayISO } from "@/lib/dates";
 
 export const metadata: Metadata = {
-  title: "Special dates",
+  title: "Fechas especiales",
 };
 
 export default async function SpecialDatesPage() {

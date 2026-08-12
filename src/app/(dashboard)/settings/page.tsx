@@ -3,7 +3,7 @@ import { getSessionContext, getSettings } from "@/lib/data";
 import { SettingsView } from "@/components/SettingsView";
 
 export const metadata: Metadata = {
-  title: "Settings",
+  title: "Ajustes",
 };
 
 export default async function SettingsPage() {

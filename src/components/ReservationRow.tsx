@@ -45,7 +45,7 @@ export function ReservationRow({
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[13px] font-medium">{booking.name}</span>
         <span className="block truncate text-[11px] tabular-nums text-muted">
-          {booking.phone || "No phone"}
+          {booking.phone || "Sin teléfono"}
           {booking.notes ? ` · ${booking.notes}` : ""}
         </span>
       </span>

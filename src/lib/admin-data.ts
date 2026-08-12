@@ -62,7 +62,7 @@ export const requireSuperadmin = cache(async () => {
     .maybeSingle();
 
   if (error) {
-    throw new DataError("Could not verify your administrator access.");
+    throw new DataError("No se pudo verificar tu acceso de administrador.");
   }
 
   const role = data ? String((data as Record<string, unknown>).global_role ?? "") : "";
@@ -98,7 +98,7 @@ export async function listRestaurants(): Promise<AdminRestaurant[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase.from("restaurants").select("*");
-  if (error) throw new DataError("Could not load the restaurant list.");
+  if (error) throw new DataError("No se pudo cargar la lista de restaurantes.");
 
   const restaurants = (data ?? []).map((row) =>
     normalizeAdminRestaurant(row as Record<string, unknown>)
@@ -141,7 +141,7 @@ export async function getRestaurantFloor(
     .eq("id", restaurantId)
     .maybeSingle();
 
-  if (error) throw new DataError("Could not load this restaurant.");
+  if (error) throw new DataError("No se pudo cargar este restaurante.");
   if (!row) return null;
 
   const base = normalizeAdminRestaurant(row as Record<string, unknown>);
@@ -209,7 +209,7 @@ export async function getRestaurantConfig(
     .eq("id", restaurantId)
     .maybeSingle();
 
-  if (error) throw new DataError("Could not load this restaurant.");
+  if (error) throw new DataError("No se pudo cargar este restaurante.");
   if (!restaurantRow) return null;
 
   const admin = createAdminClient();
@@ -221,7 +221,7 @@ export async function getRestaurantConfig(
     .limit(1);
 
   if (ownerMembershipError) {
-    throw new DataError("Could not load this restaurant's owner.");
+    throw new DataError("No se pudo cargar el propietario de este restaurante.");
   }
 
   const ownerId = ownerMemberships?.[0]?.user_id
@@ -233,7 +233,7 @@ export async function getRestaurantConfig(
     const { data: ownerData, error: ownerError } =
       await admin.auth.admin.getUserById(ownerId);
     if (ownerError && ownerError.code !== "user_not_found") {
-      throw new DataError("Could not load this restaurant's owner.");
+      throw new DataError("No se pudo cargar el propietario de este restaurante.");
     }
     if (ownerData.user?.email) {
       owner = { id: ownerId, email: ownerData.user.email };

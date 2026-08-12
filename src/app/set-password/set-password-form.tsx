@@ -40,7 +40,7 @@ export function SetPasswordForm() {
       queueMicrotask(() => {
         if (!active) return;
         setError(
-          "This invitation is invalid or has expired. Ask the administrator to send a new one."
+          "Esta invitación no es válida o ha caducado. Pide al administrador que envíe otra."
         );
         setStatus("invalid");
       });
@@ -63,7 +63,7 @@ export function SetPasswordForm() {
       if (!sessionError && data.session) setStatus("ready");
       else {
         setError(
-          "This invitation is invalid or has expired. Ask the administrator to send a new one."
+          "Esta invitación no es válida o ha caducado. Pide al administrador que envíe otra."
         );
         setStatus("invalid");
       }
@@ -79,11 +79,11 @@ export function SetPasswordForm() {
     setError(null);
 
     if (password.length < 8) {
-      setError("Use at least 8 characters.");
+      setError("Usa al menos 8 caracteres.");
       return;
     }
     if (password !== confirmation) {
-      setError("The passwords do not match.");
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -93,8 +93,8 @@ export function SetPasswordForm() {
     if (updateError) {
       setError(
         updateError.code === "weak_password"
-          ? "Choose a stronger password."
-          : "Could not save your password. Request a new invitation and try again."
+          ? "Elige una contraseña más segura."
+          : "No se pudo guardar la contraseña. Solicita otra invitación e inténtalo de nuevo."
       );
       setStatus("ready");
       return;
@@ -107,7 +107,7 @@ export function SetPasswordForm() {
   if (status === "checking") {
     return (
       <p className="flex items-center gap-2 text-xs text-muted">
-        <Spinner size={14} /> Checking invitation…
+        <Spinner size={14} /> Comprobando la invitación…
       </p>
     );
   }
@@ -115,7 +115,7 @@ export function SetPasswordForm() {
   if (status === "done") {
     return (
       <p className="flex items-center gap-2 rounded-lg bg-ok-soft px-3 py-2 text-xs font-medium text-ok">
-        <CheckIcon size={14} /> Password created. Opening your dashboard…
+        <CheckIcon size={14} /> Contraseña creada. Abriendo tu panel…
       </p>
     );
   }
@@ -130,7 +130,7 @@ export function SetPasswordForm() {
           href="/login"
           className="mt-4 inline-flex text-xs font-medium text-ink-soft hover:text-ink"
         >
-          Back to sign in
+          Volver al inicio de sesión
         </Link>
       </div>
     );
@@ -139,7 +139,7 @@ export function SetPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <label className="block">
-        <span className="mb-1 block text-xs font-medium text-ink-soft">Password</span>
+        <span className="mb-1 block text-xs font-medium text-ink-soft">Contraseña</span>
         <input
           type="password"
           required
@@ -153,7 +153,7 @@ export function SetPasswordForm() {
 
       <label className="block">
         <span className="mb-1 block text-xs font-medium text-ink-soft">
-          Confirm password
+          Confirmar contraseña
         </span>
         <input
           type="password"
@@ -178,7 +178,7 @@ export function SetPasswordForm() {
         className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-85 disabled:opacity-50"
       >
         {status === "saving" && <Spinner size={14} />}
-        Create password
+        Crear contraseña
       </button>
     </form>
   );

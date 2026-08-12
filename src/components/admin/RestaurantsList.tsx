@@ -29,7 +29,7 @@ function formatCreated(value: string | null): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-ES", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -89,31 +89,31 @@ export function RestaurantsList({
   return (
     <>
       <TopBar
-        title="Terron Studio admin"
+        title="Administración de Terron Studio"
         search={{
           value: query,
           onChange: setQuery,
-          placeholder: "Search by name or domain",
+          placeholder: "Buscar por nombre o dominio",
         }}
         onNew={() => router.push("/admin/restaurants/new")}
-        newLabel="New restaurant"
+        newLabel="Nuevo restaurante"
       />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-4xl px-3 py-4 md:px-6">
           <PageHeading
-            title="Restaurants"
-            description={`${restaurants.length} total · ${liveCount} live · ${
+            title="Restaurantes"
+            description={`${restaurants.length} en total · ${liveCount} activos · ${
               restaurants.length - liveCount
-            } still being set up`}
+            } en configuración`}
             action={
               <Segmented
-                label="Filter"
+                label="Filtro"
                 value={filter}
                 options={[
-                  { value: "all", label: "All" },
-                  { value: "live", label: "Live" },
-                  { value: "onboarding", label: "Setting up" },
+                  { value: "all", label: "Todos" },
+                  { value: "live", label: "Activos" },
+                  { value: "onboarding", label: "En configuración" },
                 ]}
                 onChange={setFilter}
               />
@@ -126,14 +126,14 @@ export function RestaurantsList({
             <div className="mt-10">
               <EmptyState
                 icon={<ListIcon size={18} />}
-                title="No restaurants yet"
-                body="Onboard the first client to get them booking."
+                title="Todavía no hay restaurantes"
+                body="Incorpora al primer cliente para que pueda empezar a recibir reservas."
                 action={
                   <Link
                     href="/admin/restaurants/new"
                     className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[13px] font-medium text-surface hover:opacity-85"
                   >
-                    <PlusIcon size={13} /> New restaurant
+                    <PlusIcon size={13} /> Nuevo restaurante
                   </Link>
                 }
               />
@@ -142,8 +142,8 @@ export function RestaurantsList({
             <div className="mt-10">
               <EmptyState
                 icon={<SearchIcon size={18} />}
-                title="No matches"
-                body="No restaurant matches this filter or search."
+                title="Sin resultados"
+                body="Ningún restaurante coincide con este filtro o búsqueda."
               />
             </div>
           ) : (
@@ -163,7 +163,7 @@ export function RestaurantsList({
                       {restaurant.name}
                     </span>
                     <span className="block truncate text-[11px] text-muted">
-                      {restaurant.slug || "No domain"} · added{" "}
+                      {restaurant.slug || "Sin dominio"} · añadido el{" "}
                       {formatCreated(restaurant.createdAt)}
                     </span>
                   </Link>
@@ -176,7 +176,7 @@ export function RestaurantsList({
                     }`}
                   >
                     <span className="size-1 rounded-full bg-current" aria-hidden />
-                    {restaurant.active ? "Live" : "Setting up"}
+                    {restaurant.active ? "Activo" : "En configuración"}
                   </span>
 
                   {restaurant.active ? (
@@ -186,7 +186,7 @@ export function RestaurantsList({
                       disabled={busyId === restaurant.id}
                       className="rounded-lg border border-line px-2 py-1 text-[11px] font-medium hover:bg-sunken disabled:opacity-40"
                     >
-                      {busyId === restaurant.id ? <Spinner size={11} /> : "Deactivate"}
+                      {busyId === restaurant.id ? <Spinner size={11} /> : "Desactivar"}
                     </button>
                   ) : (
                     <button
@@ -195,7 +195,7 @@ export function RestaurantsList({
                       disabled={busyId === restaurant.id}
                       className="rounded-lg border border-line px-2 py-1 text-[11px] font-medium hover:bg-sunken disabled:opacity-40"
                     >
-                      {busyId === restaurant.id ? <Spinner size={11} /> : "Activate"}
+                      {busyId === restaurant.id ? <Spinner size={11} /> : "Activar"}
                     </button>
                   )}
 
@@ -205,7 +205,7 @@ export function RestaurantsList({
                     }`}
                     className="inline-flex items-center gap-1 rounded-lg bg-ink px-2.5 py-1 text-[11px] font-medium text-surface hover:opacity-85"
                   >
-                    {restaurant.active ? "Edit" : "Continue setup"}
+                    {restaurant.active ? "Editar" : "Continuar configuración"}
                     <ChevronRightIcon size={11} />
                   </Link>
                 </div>
@@ -219,7 +219,7 @@ export function RestaurantsList({
               icon={<PlusIcon size={13} />}
               onClick={() => router.push("/admin/restaurants/new")}
             >
-              New restaurant
+              Nuevo restaurante
             </Button>
           </div>
         </div>
@@ -227,9 +227,9 @@ export function RestaurantsList({
 
       {deactivating && (
         <ConfirmDialog
-          title="Deactivate this restaurant?"
-          body={`${deactivating.name} will stop accepting new bookings through ${deactivating.slug}. Existing reservations are not affected.`}
-          confirmLabel="Deactivate"
+          title="¿Desactivar este restaurante?"
+          body={`${deactivating.name} dejará de aceptar nuevas reservas a través de ${deactivating.slug}. Las reservas existentes no se verán afectadas.`}
+          confirmLabel="Desactivar"
           destructive
           pending={busyId === deactivating.id}
           error={error}

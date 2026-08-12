@@ -12,6 +12,10 @@ import { EmptyState } from "@/components/EmptyState";
 import { CalendarIcon, PlusIcon, SearchIcon } from "@/components/icons";
 import { useReservationOverlays } from "@/components/useReservationOverlays";
 import { useLiveBookings } from "@/components/useLiveBookings";
+import { Segmented } from "@/components/ui";
+
+/** Phones show one pane at a time; both are side by side from large up. */
+type MobilePane = "map" | "list";
 
 export function TodayView({
   restaurant,
@@ -33,6 +37,7 @@ export function TodayView({
   nowMs: number;
 }) {
   const [query, setQuery] = useState("");
+  const [pane, setPane] = useState<MobilePane>("map");
   const { selected, select, selectFromTable, openCreate, overlays } =
     useReservationOverlays(today);
   useLiveBookings(restaurant.id);
@@ -57,15 +62,15 @@ export function TodayView({
 
     // Labels stay short: the strip sits in a 360px panel beside the floor.
     return [
-      { label: "Bookings", value: String(live.length) },
+      { label: "Reservas", value: String(live.length) },
       {
-        label: "Covers",
+        label: "Comensales",
         value: String(live.reduce((sum, booking) => sum + (booking.partySize || 0), 0)),
       },
-      { label: "Next", value: next?.time ?? "—" },
+      { label: "Próxima", value: next?.time ?? "—" },
       cancelledCount > 0
-        ? { label: "Cancelled", value: String(cancelledCount), tone: "danger" as const }
-        : { label: "Upcoming", value: String(upcomingCount) },
+        ? { label: "Canceladas", value: String(cancelledCount), tone: "danger" as const }
+        : { label: "Próximas", value: String(upcomingCount) },
     ];
   }, [bookings, upcomingCount, nowMs]);
 
@@ -76,18 +81,36 @@ export function TodayView({
         search={{
           value: query,
           onChange: setQuery,
-          placeholder: "Search by guest name or phone",
+          placeholder: "Buscar por nombre o teléfono",
         }}
         onNew={() => openCreate(today)}
       />
 
+      {/* Pane switch, phones and tablets only */}
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-3 py-2 lg:hidden">
+        <p className="truncate text-xs text-muted">{formatDayLabel(today)}</p>
+        <Segmented
+          label="Vista"
+          value={pane}
+          options={[
+            { value: "map", label: "Plano" },
+            { value: "list", label: "Reservas" },
+          ]}
+          onChange={setPane}
+        />
+      </div>
+
       <div className="flex min-h-0 flex-1">
         {/* Reservation list panel */}
-        <aside className="flex w-full min-w-0 flex-col border-line lg:w-[360px] lg:shrink-0 lg:border-r xl:w-[380px]">
+        <aside
+          className={`w-full min-w-0 flex-col border-line lg:flex lg:w-[360px] lg:shrink-0 lg:border-r xl:w-[380px] ${
+            pane === "list" ? "flex" : "hidden"
+          }`}
+        >
           <div className="shrink-0 px-3 pb-2 pt-3 md:px-4">
             <div className="flex items-baseline justify-between gap-2">
               <div>
-                <h2 className="text-sm font-semibold">Today&apos;s service</h2>
+                <h2 className="text-sm font-semibold">Servicio de hoy</h2>
                 <p className="text-xs text-muted">{formatDayLabel(today)}</p>
               </div>
               <span className="rounded-md bg-sunken px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-ink-soft">
@@ -103,23 +126,23 @@ export function TodayView({
             {bookings.length === 0 ? (
               <EmptyState
                 icon={<CalendarIcon size={18} />}
-                title="No reservations today"
-                body="New bookings for today will show up here as they come in."
+                title="No hay reservas para hoy"
+                body="Las nuevas reservas de hoy aparecerán aquí cuando entren."
                 action={
                   <button
                     type="button"
                     onClick={() => openCreate(today)}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-surface hover:opacity-85"
                   >
-                    <PlusIcon size={13} /> New reservation
+                    <PlusIcon size={13} /> Nueva reserva
                   </button>
                 }
               />
             ) : filtered.length === 0 ? (
               <EmptyState
                 icon={<SearchIcon size={18} />}
-                title="No matches"
-                body={`No reservation matches “${query.trim()}”.`}
+                title="Sin resultados"
+                body={`Ninguna reserva coincide con “${query.trim()}”.`}
               />
             ) : (
               filtered.map((booking) => (
@@ -134,8 +157,10 @@ export function TodayView({
           </div>
         </aside>
 
-        {/* Isometric floor — desktop only */}
-        <main className="hidden min-w-0 flex-1 lg:block">
+        {/* Isometric floor */}
+        <main
+          className={`min-w-0 flex-1 lg:block ${pane === "map" ? "block" : "hidden"}`}
+        >
           <FloorView
             tables={tables}
             bookings={bookings}

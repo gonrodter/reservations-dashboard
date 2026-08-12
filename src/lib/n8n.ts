@@ -14,7 +14,7 @@ async function post(path: string, payload: Record<string, unknown>) {
     });
   } catch {
     throw new BackendError(
-      "Could not reach the reservations service. Check your connection and try again."
+      "No se pudo contactar con el servicio de reservas. Comprueba tu conexión e inténtalo de nuevo."
     );
   }
 
@@ -28,7 +28,7 @@ async function post(path: string, payload: Record<string, unknown>) {
 
   if (!response.ok) {
     throw new BackendError(
-      "The reservations service could not complete this request. Please try again."
+      "El servicio de reservas no pudo completar la solicitud. Inténtalo de nuevo."
     );
   }
 
@@ -42,7 +42,7 @@ async function post(path: string, payload: Record<string, unknown>) {
     throw new BackendError(
       typeof message === "string" && message.length < 200
         ? message
-        : "The reservations service rejected this request."
+        : "El servicio de reservas rechazó la solicitud."
     );
   }
 

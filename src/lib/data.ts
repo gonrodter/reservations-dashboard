@@ -44,7 +44,7 @@ export const getSessionContext = cache(async () => {
     .select("restaurant_id, role")
     .eq("user_id", user.id);
 
-  if (membershipError) fail("Could not load your restaurant access.");
+  if (membershipError) fail("No se pudo cargar tu acceso al restaurante.");
 
   const restaurantIds = [
     ...new Set(
@@ -65,7 +65,7 @@ export const getSessionContext = cache(async () => {
     .in("id", restaurantIds);
 
   if (restaurantError || !restaurantRows?.length) {
-    fail("Could not load your restaurant.");
+    fail("No se pudo cargar tu restaurante.");
   }
 
   const restaurants = restaurantRows.map((row) =>
@@ -97,7 +97,7 @@ export const getSessionContext = cache(async () => {
 /** Session restaurant, or a readable error for callers that cannot proceed without one. */
 export async function requireRestaurant(): Promise<Restaurant> {
   const { restaurant } = await getSessionContext();
-  if (!restaurant) fail("Your account has no restaurant assigned yet.");
+  if (!restaurant) fail("Tu cuenta todavía no tiene ningún restaurante asignado.");
   return restaurant;
 }
 
@@ -269,7 +269,7 @@ export async function getBookingsBetween(
       .limit(2000),
   ]);
 
-  if (result.error) fail("Could not load reservations.");
+  if (result.error) fail("No se pudieron cargar las reservas.");
   return attachTables(result.data as Record<string, unknown>[], tables, restaurant.timezone);
 }
 

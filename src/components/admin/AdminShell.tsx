@@ -12,11 +12,11 @@ import {
 // differ. The second group is the way back out to a restaurant dashboard.
 const ADMIN_GROUPS: NavItem[][] = [
   [
-    { href: "/admin", label: "Overview", icon: LayersIcon },
-    { href: "/admin/restaurants", label: "Restaurants", icon: ListIcon },
-    { href: "/admin/floors", label: "Table map", icon: TableIcon },
+    { href: "/admin", label: "Resumen", icon: LayersIcon },
+    { href: "/admin/restaurants", label: "Restaurantes", icon: ListIcon },
+    { href: "/admin/floors", label: "Plano de mesas", icon: TableIcon },
   ],
-  [{ href: "/", label: "Restaurant dashboard", icon: ClockIcon }],
+  [{ href: "/", label: "Panel del restaurante", icon: ClockIcon }],
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

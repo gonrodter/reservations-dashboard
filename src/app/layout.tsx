@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Reservations",
-  description: "Reservation management dashboard for restaurant teams.",
+  title: "Reservas",
+  description: "Panel de gestión de reservas para equipos de restaurante.",
 };
 
 export const viewport: Viewport = {
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}
       </body>

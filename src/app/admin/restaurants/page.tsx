@@ -3,7 +3,7 @@ import { listRestaurants } from "@/lib/admin-data";
 import { RestaurantsList } from "@/components/admin/RestaurantsList";
 
 export const metadata: Metadata = {
-  title: "Restaurants · Admin",
+  title: "Restaurantes · Administración",
 };
 
 export default async function AdminRestaurantsPage() {

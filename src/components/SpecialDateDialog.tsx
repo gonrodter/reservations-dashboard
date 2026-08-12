@@ -62,12 +62,12 @@ export function SpecialDateDialog({
 
   return (
     <Modal
-      title={specialDate ? "Edit special date" : "Add a special date"}
+      title={specialDate ? "Editar fecha especial" : "Añadir una fecha especial"}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className="contents">
         <div className="thin-scroll flex-1 space-y-4 overflow-y-auto px-4 py-4">
-          <Field label="Date" required>
+          <Field label="Fecha" required>
             <Input
               required
               type="date"
@@ -78,14 +78,14 @@ export function SpecialDateDialog({
 
           <div>
             <p className="mb-1.5 text-xs font-medium text-ink-soft">
-              On this date the restaurant is
+              En esta fecha el restaurante está
             </p>
             <Segmented
-              label="What happens on this date"
+              label="Qué ocurre en esta fecha"
               value={mode}
               options={[
-                { value: "closed", label: "Closed" },
-                { value: "hours", label: "Open, different hours" },
+                { value: "closed", label: "Cerrado" },
+                { value: "hours", label: "Abierto, con otro horario" },
               ]}
               onChange={setMode}
             />
@@ -94,7 +94,7 @@ export function SpecialDateDialog({
           {mode === "hours" && (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="First booking" required>
+                <Field label="Primera reserva" required>
                   <Input
                     required
                     type="time"
@@ -102,7 +102,7 @@ export function SpecialDateDialog({
                     onChange={(event) => setStartTime(event.target.value)}
                   />
                 </Field>
-                <Field label="Last booking" required>
+                <Field label="Última reserva" required>
                   <Input
                     required
                     type="time"
@@ -113,22 +113,22 @@ export function SpecialDateDialog({
               </div>
               {overnight && (
                 <p className="rounded-lg bg-info-soft px-3 py-2 text-xs leading-5 text-info">
-                  Service runs past midnight, finishing at {endTime} the next
-                  morning.
+                  El servicio termina después de medianoche, a las {endTime} de
+                  la mañana siguiente.
                 </p>
               )}
             </>
           )}
 
           <Field
-            label="Note"
-            hint="Optional. Shown to your team, for example “New Year's Eve” or “Private event”."
+            label="Nota"
+            hint="Opcional. La verá tu equipo, por ejemplo, “Nochevieja” o “Evento privado”."
           >
             <Textarea
               rows={2}
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Christmas Day"
+              placeholder="Día de Navidad"
             />
           </Field>
 
@@ -137,10 +137,10 @@ export function SpecialDateDialog({
 
         <footer className="flex gap-2 border-t border-line p-3">
           <Button type="button" onClick={onClose} className="flex-1 py-2">
-            Discard
+            Descartar
           </Button>
           <Button type="submit" variant="primary" pending={pending} className="flex-1 py-2">
-            {specialDate ? "Save date" : "Add date"}
+            {specialDate ? "Guardar fecha" : "Añadir fecha"}
           </Button>
         </footer>
       </form>

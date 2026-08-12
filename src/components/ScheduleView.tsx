@@ -29,20 +29,20 @@ export function ScheduleView({
       <TopBar
         title={restaurant.name}
         onNew={() => setAdding(true)}
-        newLabel="Add hours"
+        newLabel="Añadir horario"
       />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-3 py-4 md:px-6">
           <PageHeading
-            title="Booking hours"
-            description="When guests can book a table, for each day of the week. A day with no hours takes no bookings."
+            title="Horario de reservas"
+            description="Cuándo pueden reservar mesa los clientes cada día de la semana. Los días sin horario no aceptan reservas."
           />
 
           <p className="mt-2 text-xs text-muted">
             {openDays === 0
-              ? "No days are open for bookings yet."
-              : `Open for bookings on ${openDays} of 7 days.`}
+              ? "Todavía no hay ningún día abierto para reservas."
+              : `Se aceptan reservas ${openDays} de los 7 días.`}
           </p>
 
           <div className="mt-4">
@@ -58,8 +58,9 @@ export function ScheduleView({
           </div>
 
           <p className="mt-4 text-[11px] leading-5 text-muted">
-            Need different hours for one specific date, like a holiday? Use
-            Special dates instead — those always win over the weekly hours.
+            ¿Necesitas un horario distinto para una fecha concreta, como un
+            festivo? Usa Fechas especiales: siempre tienen prioridad sobre el
+            horario semanal.
           </p>
 
           <div className="mt-3">
@@ -68,7 +69,7 @@ export function ScheduleView({
               icon={<PlusIcon size={13} />}
               onClick={() => setAdding(true)}
             >
-              Add booking hours
+              Añadir horario de reservas
             </Button>
           </div>
         </div>

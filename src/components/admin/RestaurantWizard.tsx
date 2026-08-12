@@ -152,7 +152,7 @@ export function RestaurantWizard({
 
   return (
     <>
-      <TopBar title="Terron Studio admin" />
+      <TopBar title="Administración de Terron Studio" />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-5xl px-3 py-4 md:px-6">
@@ -160,13 +160,13 @@ export function RestaurantWizard({
             href="/admin/restaurants"
             className="inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-ink"
           >
-            <ChevronLeftIcon size={13} /> All restaurants
+            <ChevronLeftIcon size={13} /> Todos los restaurantes
           </Link>
 
           <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 className="truncate text-sm font-semibold">{restaurant.name}</h2>
-              <p className="text-xs text-muted">{restaurant.slug || "No domain yet"}</p>
+              <p className="text-xs text-muted">{restaurant.slug || "Sin dominio"}</p>
             </div>
             <span
               className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium ${
@@ -176,14 +176,14 @@ export function RestaurantWizard({
               }`}
             >
               <span className="size-1.5 rounded-full bg-current" aria-hidden />
-              {restaurant.active ? "Live" : "Not live yet"}
+              {restaurant.active ? "Activo" : "Todavía no está activo"}
             </span>
           </div>
 
           <div className="mt-4 gap-6 lg:flex">
             {/* Step list: sidebar on desktop, scrolling pills on phones */}
             <nav
-              aria-label="Onboarding steps"
+              aria-label="Pasos de configuración"
               className="thin-scroll -mx-3 mb-4 flex gap-1.5 overflow-x-auto px-3 lg:mx-0 lg:mb-0 lg:w-52 lg:shrink-0 lg:flex-col lg:overflow-visible lg:px-0"
             >
               {WIZARD_STEPS.map((candidate, position) => {
@@ -220,15 +220,15 @@ export function RestaurantWizard({
               {step === "restaurant" && (
                 <>
                   <PageHeading
-                    title="Restaurant"
-                    description="The restaurant identity and the owner account that can access its dashboard."
+                    title="Restaurante"
+                    description="La identidad del restaurante y la cuenta del propietario que puede acceder a su panel."
                   />
                   <div className="mt-4">
                     <BasicsForm
                       initialName={restaurant.name}
                       initialDomain={restaurant.slug}
                       initialOwnerEmail={owner?.email}
-                      submitLabel="Save restaurant"
+                      submitLabel="Guardar restaurante"
                       save={(input) => updateRestaurantBasics(restaurant.id, input)}
                       onSaved={refresh}
                     />
@@ -239,8 +239,8 @@ export function RestaurantWizard({
               {step === "settings" && (
                 <>
                   <PageHeading
-                    title="Booking settings"
-                    description="Review each value with the restaurant before saving. Nothing here is filled in for you."
+                    title="Ajustes de reservas"
+                    description="Revisa cada valor con el restaurante antes de guardarlo. Nada se completa automáticamente."
                   />
                   <div className="mt-4">
                     <SettingsForm
@@ -249,7 +249,7 @@ export function RestaurantWizard({
                       fallbackTimezone={restaurant.timezone ?? "Europe/Madrid"}
                       showName={false}
                       prefill={false}
-                      submitLabel="Save booking settings"
+                      submitLabel="Guardar ajustes de reservas"
                       save={(input) =>
                         saveSettingsFor(restaurant.id, {
                           ...input,
@@ -265,8 +265,8 @@ export function RestaurantWizard({
               {step === "schedule" && (
                 <>
                   <PageHeading
-                    title="Weekly schedule"
-                    description="The hours guests can book, for each day. A day with no hours takes no bookings. An end time earlier than the start means service runs past midnight."
+                    title="Horario semanal"
+                    description="Las horas en las que los clientes pueden reservar cada día. Los días sin horario no aceptan reservas. Una hora de fin anterior a la de inicio indica que el servicio termina después de medianoche."
                   />
                   <div className="mt-4">
                     <ScheduleEditor
@@ -286,8 +286,8 @@ export function RestaurantWizard({
               {step === "tables" && (
                 <>
                   <PageHeading
-                    title="Tables"
-                    description="Every physical table in the dining room, with how many guests it seats."
+                    title="Mesas"
+                    description="Todas las mesas físicas de la sala y el número de comensales que admite cada una."
                     action={
                       <AddTableButton
                         zones={zones}
@@ -321,8 +321,8 @@ export function RestaurantWizard({
               {step === "combinations" && (
                 <>
                   <PageHeading
-                    title="Table combinations"
-                    description="Optional. Only the tables you name here will ever be joined for a larger party."
+                    title="Combinaciones de mesas"
+                    description="Opcional. Solo se unirán para grupos grandes las mesas que indiques aquí."
                     action={
                       tables.length >= 2 ? (
                         <AddCombinationButton
@@ -335,8 +335,8 @@ export function RestaurantWizard({
                   />
                   {tables.length < 2 ? (
                     <p className="mt-4 rounded-lg bg-sunken px-3 py-2.5 text-xs text-muted">
-                      Add at least two tables first, then you can define which
-                      ones may be joined. You can also skip this step.
+                      Añade al menos dos mesas primero para poder definir cuáles
+                      se pueden unir. También puedes omitir este paso.
                     </p>
                   ) : (
                     <div className="mt-4">
@@ -359,51 +359,51 @@ export function RestaurantWizard({
               {step === "review" && (
                 <>
                   <PageHeading
-                    title="Review & activate"
-                    description="Check the configuration, then switch the restaurant on. Activation makes it bookable through the existing reservation system straight away."
+                    title="Revisar y activar"
+                    description="Comprueba la configuración y activa el restaurante. Al activarlo, podrá recibir reservas inmediatamente a través del sistema existente."
                   />
 
                   <Card className="mt-4 divide-y divide-line">
-                    <SummaryRow label="Restaurant">{restaurant.name}</SummaryRow>
-                    <SummaryRow label="Domain / identifier">
+                    <SummaryRow label="Restaurante">{restaurant.name}</SummaryRow>
+                    <SummaryRow label="Dominio / identificador">
                       <span className="font-medium">{restaurant.slug}</span>
                     </SummaryRow>
-                    <SummaryRow label="Owner account">
+                    <SummaryRow label="Cuenta del propietario">
                       {owner?.email ?? <Missing />}
                     </SummaryRow>
-                    <SummaryRow label="Timezone">
+                    <SummaryRow label="Zona horaria">
                       {settings?.timezone ?? <Missing />}
                     </SummaryRow>
-                    <SummaryRow label="Slot interval">
+                    <SummaryRow label="Intervalo entre franjas">
                       {settings?.slotIntervalMinutes != null ? (
-                        `${settings.slotIntervalMinutes} minutes`
+                        `${settings.slotIntervalMinutes} minutos`
                       ) : (
                         <Missing />
                       )}
                     </SummaryRow>
-                    <SummaryRow label="Reservation duration">
+                    <SummaryRow label="Duración de la reserva">
                       {settings?.defaultBookingDurationMinutes != null ? (
-                        `${settings.defaultBookingDurationMinutes} minutes`
+                        `${settings.defaultBookingDurationMinutes} minutos`
                       ) : (
                         <Missing />
                       )}
                     </SummaryRow>
-                    <SummaryRow label="Max online party">
+                    <SummaryRow label="Grupo máximo en línea">
                       {settings?.maxOnlinePartySize != null ? (
-                        `${settings.maxOnlinePartySize} guests`
+                        `${settings.maxOnlinePartySize} comensales`
                       ) : (
                         <Missing />
                       )}
                     </SummaryRow>
-                    <SummaryRow label="Table capacity rule">
+                    <SummaryRow label="Regla de capacidad de mesas">
                       {settings?.strictTableCapacity
-                        ? "Exact capacity or one spare seat"
-                        : "Flexible table assignment"}
+                        ? "Capacidad exacta o una plaza libre"
+                        : "Asignación flexible de mesas"}
                     </SummaryRow>
-                    <SummaryRow label="Advance rules">
+                    <SummaryRow label="Reglas de antelación">
                       {settings?.minAdvanceMinutes != null &&
                       settings?.maxAdvanceDays != null ? (
-                        `At least ${settings.minAdvanceMinutes} minutes ahead, up to ${settings.maxAdvanceDays} days out`
+                        `Al menos ${settings.minAdvanceMinutes} minutos de antelación y hasta ${settings.maxAdvanceDays} días`
                       ) : (
                         <Missing />
                       )}
@@ -411,7 +411,7 @@ export function RestaurantWizard({
                   </Card>
 
                   <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">
-                    Weekly schedule
+                    Horario semanal
                   </h3>
                   <Card className="mt-1 divide-y divide-line">
                     {DAY_ORDER.map((day) => {
@@ -421,7 +421,7 @@ export function RestaurantWizard({
                       return (
                         <SummaryRow key={day} label={WEEKDAYS[day]}>
                           {periods.length === 0 ? (
-                            <span className="text-muted">Closed</span>
+                            <span className="text-muted">Cerrado</span>
                           ) : (
                             <span className="tabular-nums">
                               {periods
@@ -441,11 +441,11 @@ export function RestaurantWizard({
                   </Card>
 
                   <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">
-                    Tables ({tables.filter((table) => table.active).length} in service)
+                    Mesas ({tables.filter((table) => table.active).length} en servicio)
                   </h3>
                   <Card className="mt-1 p-4">
                     {tables.length === 0 ? (
-                      <p className="text-[13px] text-muted">No tables configured.</p>
+                      <p className="text-[13px] text-muted">No hay mesas configuradas.</p>
                     ) : (
                       <div className="flex flex-wrap gap-1.5">
                         {tables.map((table) => (
@@ -464,12 +464,12 @@ export function RestaurantWizard({
                   </Card>
 
                   <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">
-                    Combinations
+                    Combinaciones
                   </h3>
                   <Card className="mt-1 p-4">
                     {combinations.length === 0 ? (
                       <p className="text-[13px] text-muted">
-                        None configured. That is fine — this step is optional.
+                        No hay ninguna configurada. No pasa nada: este paso es opcional.
                       </p>
                     ) : (
                       <ul className="space-y-1.5">
@@ -477,9 +477,9 @@ export function RestaurantWizard({
                           <li key={combination.id} className="text-[13px]">
                             <span className="font-medium">{combination.name}</span>{" "}
                             <span className="text-muted">
-                              — {combination.capacity ?? "?"} seats,{" "}
-                              {combination.memberIds.length} tables
-                              {combination.active ? "" : " (not in use)"}
+                              — {combination.capacity ?? "?"} plazas,{" "}
+                              {combination.memberIds.length} mesas
+                              {combination.active ? "" : " (fuera de uso)"}
                             </span>
                           </li>
                         ))}
@@ -489,12 +489,12 @@ export function RestaurantWizard({
 
                   {!status.readyToActivate && (
                     <div className="mt-4 rounded-lg bg-warn-soft px-3 py-2.5 text-xs leading-5 text-warn">
-                      Before activating, this restaurant still needs{" "}
+                      Antes de activarlo, este restaurante todavía necesita{" "}
                       {joinPhrases([
-                        !status.owner && "an owner account",
-                        !status.settings && "its booking settings saved",
-                        !status.schedule && "at least one day of booking hours",
-                        !status.tables && "at least one table in service",
+                        !status.owner && "una cuenta de propietario",
+                        !status.settings && "guardar sus ajustes de reservas",
+                        !status.schedule && "al menos un día con horario de reservas",
+                        !status.tables && "al menos una mesa en servicio",
                       ])}
                       .
                     </div>
@@ -507,11 +507,11 @@ export function RestaurantWizard({
                   {restaurant.active ? (
                     <Card className="mt-4 p-4">
                       <p className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ok">
-                        <CheckIcon size={14} /> This restaurant is live
+                        <CheckIcon size={14} /> Este restaurante está activo
                       </p>
                       <p className="mt-1 text-xs leading-5 text-muted">
-                        Bookings for <span className="font-medium">{restaurant.slug}</span>{" "}
-                        are being accepted by the reservation system.
+                        El sistema de reservas está aceptando reservas para{" "}
+                        <span className="font-medium">{restaurant.slug}</span>.
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Button
@@ -519,13 +519,13 @@ export function RestaurantWizard({
                           pending={activating}
                           onClick={() => toggleActive(false)}
                         >
-                          Deactivate restaurant
+                          Desactivar restaurante
                         </Button>
                         <Link
                           href="/admin/restaurants"
                           className="inline-flex items-center rounded-lg border border-line px-3 py-1.5 text-[13px] font-medium hover:bg-sunken"
                         >
-                          Back to all restaurants
+                          Volver a todos los restaurantes
                         </Link>
                       </div>
                     </Card>
@@ -537,7 +537,7 @@ export function RestaurantWizard({
                         disabled={!status.readyToActivate}
                         onClick={() => toggleActive(true)}
                       >
-                        Activate restaurant
+                        Activar restaurante
                       </Button>
                     </div>
                   )}
@@ -581,13 +581,13 @@ export function RestaurantWizard({
 function joinPhrases(parts: (string | false)[]): string {
   const kept = parts.filter(Boolean) as string[];
   if (kept.length <= 1) return kept.join("");
-  return `${kept.slice(0, -1).join(", ")} and ${kept[kept.length - 1]}`;
+  return `${kept.slice(0, -1).join(", ")} y ${kept[kept.length - 1]}`;
 }
 
 function Missing() {
   return (
     <span className="inline-flex items-center gap-1 text-warn">
-      <PlusIcon size={11} /> Not set
+      <PlusIcon size={11} /> Sin configurar
     </span>
   );
 }

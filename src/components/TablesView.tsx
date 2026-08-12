@@ -52,21 +52,21 @@ export function TablesView({
         onNew={() =>
           tab === "tables" ? setAddingTable(true) : setAddingCombination(true)
         }
-        newLabel={tab === "tables" ? "New table" : "New combination"}
+        newLabel={tab === "tables" ? "Nueva mesa" : "Nueva combinación"}
       />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-3 py-4 md:px-6">
           <PageHeading
-            title="Tables"
-            description={`${inService.length} in service · ${seats} seats · ${combinations.filter((c) => c.active).length} combinations`}
+            title="Mesas"
+            description={`${inService.length} en servicio · ${seats} plazas · ${combinations.filter((c) => c.active).length} combinaciones`}
             action={
               <Segmented
-                label="Section"
+                label="Sección"
                 value={tab}
                 options={[
-                  { value: "tables", label: "Tables" },
-                  { value: "combinations", label: "Combinations" },
+                  { value: "tables", label: "Mesas" },
+                  { value: "combinations", label: "Combinaciones" },
                 ]}
                 onChange={setTab}
               />

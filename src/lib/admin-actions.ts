@@ -74,7 +74,7 @@ function ownerEmail(value: string): string | null {
 function inviteRedirectUrl(): string {
   const configured = process.env.APP_URL?.trim();
   if (!configured) {
-    throw new DataError("Owner invitations are not configured. Add APP_URL.");
+    throw new DataError("Las invitaciones a propietarios no están configuradas. Añade APP_URL.");
   }
 
   try {
@@ -82,7 +82,7 @@ function inviteRedirectUrl(): string {
     if (url.protocol !== "https:" && url.hostname !== "localhost") throw new Error();
     return url.toString();
   } catch {
-    throw new DataError("APP_URL must be a valid HTTPS application URL.");
+    throw new DataError("APP_URL debe ser una URL HTTPS válida de la aplicación.");
   }
 }
 
@@ -95,12 +95,12 @@ function inviteError(error: { code?: string; message?: string } | null): string 
     message.includes("already been registered") ||
     message.includes("already exists")
   ) {
-    return "That email already belongs to an account. Use a new email address.";
+    return "Ese correo electrónico ya pertenece a una cuenta. Usa otra dirección.";
   }
   if (code === "over_email_send_rate_limit") {
-    return "Supabase's email limit has been reached. Wait a moment and try again.";
+    return "Se ha alcanzado el límite de correos de Supabase. Espera un momento e inténtalo de nuevo.";
   }
-  return "Could not send the owner invitation. Please try again.";
+  return "No se pudo enviar la invitación al propietario. Inténtalo de nuevo.";
 }
 
 async function inviteOwner(
@@ -180,19 +180,19 @@ export async function createRestaurant(
     const supabase = await createClient();
 
     const name = input.name.trim();
-    if (!name) return { ok: false, error: "Enter the restaurant's name." };
+    if (!name) return { ok: false, error: "Introduce el nombre del restaurante." };
 
     const slug = normalizeDomain(input.domain);
-    if (!slug) return { ok: false, error: "Enter the restaurant's website domain." };
+    if (!slug) return { ok: false, error: "Introduce el dominio web del restaurante." };
     if (!isValidDomain(slug)) {
       return {
         ok: false,
-        error: `“${slug}” is not a valid domain. Use something like restaurant.com.`,
+        error: `“${slug}” no es un dominio válido. Usa algo como restaurante.com.`,
       };
     }
 
     const email = ownerEmail(input.ownerEmail);
-    if (!email) return { ok: false, error: "Enter a valid owner email address." };
+    if (!email) return { ok: false, error: "Introduce un correo electrónico válido para el propietario." };
 
     const { data: existing } = await supabase
       .from("restaurants")
@@ -203,7 +203,7 @@ export async function createRestaurant(
     if (existing) {
       return {
         ok: false,
-        error: `${slug} is already used by another restaurant. Each domain can only be onboarded once.`,
+        error: `${slug} ya lo usa otro restaurante. Cada dominio solo se puede incorporar una vez.`,
       };
     }
 
@@ -234,7 +234,7 @@ export async function createRestaurant(
     if (membershipError) {
       await admin.from("restaurants").delete().eq("id", id);
       await admin.auth.admin.deleteUser(userId);
-      return { ok: false, error: "Could not assign the owner. Please try again." };
+      return { ok: false, error: "No se pudo asignar el propietario. Inténtalo de nuevo." };
     }
 
     revalidateRestaurant(id);
@@ -254,19 +254,19 @@ export async function updateRestaurantBasics(
     const supabase = await createClient();
 
     const name = input.name.trim();
-    if (!name) return { ok: false, error: "Enter the restaurant's name." };
+    if (!name) return { ok: false, error: "Introduce el nombre del restaurante." };
 
     const slug = normalizeDomain(input.domain);
-    if (!slug) return { ok: false, error: "Enter the restaurant's website domain." };
+    if (!slug) return { ok: false, error: "Introduce el dominio web del restaurante." };
     if (!isValidDomain(slug)) {
       return {
         ok: false,
-        error: `“${slug}” is not a valid domain. Use something like restaurant.com.`,
+        error: `“${slug}” no es un dominio válido. Usa algo como restaurante.com.`,
       };
     }
 
     const email = ownerEmail(input.ownerEmail);
-    if (!email) return { ok: false, error: "Enter a valid owner email address." };
+    if (!email) return { ok: false, error: "Introduce un correo electrónico válido para el propietario." };
 
     const { data: clash } = await supabase
       .from("restaurants")
@@ -278,7 +278,7 @@ export async function updateRestaurantBasics(
     if (clash) {
       return {
         ok: false,
-        error: `${slug} is already used by another restaurant.`,
+        error: `${slug} ya lo usa otro restaurante.`,
       };
     }
 
@@ -290,7 +290,7 @@ export async function updateRestaurantBasics(
       .eq("role", "owner");
 
     if (ownerRowsError) {
-      return { ok: false, error: "Could not load the current owner." };
+      return { ok: false, error: "No se pudo cargar el propietario actual." };
     }
 
     const previousOwnerIds = (ownerRows ?? [])
@@ -323,7 +323,7 @@ export async function updateRestaurantBasics(
     });
     if (membershipError) {
       await admin.auth.admin.deleteUser(newOwnerId);
-      return { ok: false, error: "Could not assign the new owner. Please try again." };
+      return { ok: false, error: "No se pudo asignar el nuevo propietario. Inténtalo de nuevo." };
     }
 
     const { error } = await supabase
@@ -355,7 +355,7 @@ export async function updateRestaurantBasics(
           .eq("restaurant_id", restaurantId)
           .eq("user_id", newOwnerId);
         await admin.auth.admin.deleteUser(newOwnerId);
-        return { ok: false, error: "Could not replace the current owner." };
+        return { ok: false, error: "No se pudo sustituir al propietario actual." };
       }
       await removePreviousOwnerAccounts(admin, previousOwnerIds);
     }

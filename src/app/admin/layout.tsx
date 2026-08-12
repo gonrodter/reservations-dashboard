@@ -3,7 +3,7 @@ import { requireSuperadmin } from "@/lib/admin-data";
 import { AdminShell } from "@/components/admin/AdminShell";
 
 export const metadata: Metadata = {
-  title: "Terron Studio admin",
+  title: "Administración de Terron Studio",
 };
 
 /**

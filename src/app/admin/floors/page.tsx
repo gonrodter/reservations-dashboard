@@ -3,7 +3,7 @@ import { getRestaurantFloor, listRestaurants } from "@/lib/admin-data";
 import { AdminFloorView } from "@/components/admin/AdminFloorView";
 
 export const metadata: Metadata = {
-  title: "Table map · Admin",
+  title: "Plano de mesas · Administración",
 };
 
 export default async function AdminFloorsPage({

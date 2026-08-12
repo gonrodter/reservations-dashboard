@@ -167,7 +167,7 @@ function normalizeStatus(value: unknown): BookingStatus {
 export function normalizeRestaurant(row: Row): Restaurant {
   return {
     id: String(pick(row, ["id", "restaurant_id"]) ?? ""),
-    name: str(pick(row, ["name", "restaurant_name", "title"])) ?? "Restaurant",
+    name: str(pick(row, ["name", "restaurant_name", "title"])) ?? "Restaurante",
     slug: str(pick(row, ["slug", "restaurant_slug"])) ?? "",
     timezone: str(pick(row, ["timezone", "time_zone", "tz"])) ?? undefined,
   };
@@ -197,7 +197,7 @@ export function normalizeTable(row: Row): RestaurantTable {
     id: String(pick(row, ["id", "table_id"]) ?? ""),
     name:
       str(pick(row, ["name", "label", "table_name", "table_number", "number"])) ??
-      "Table",
+      "Mesa",
     capacity: num(pick(row, ["capacity", "seats", "max_party_size"])),
     zone: str(pick(row, ["zone", "area", "section", "room"])),
     active: bool(pick(row, ["active", "is_active", "enabled"]), true),
@@ -209,7 +209,7 @@ export function normalizeTable(row: Row): RestaurantTable {
 export function normalizeCombination(row: Row, memberIds: string[]): TableCombination {
   return {
     id: String(pick(row, ["id", "combination_id"]) ?? ""),
-    name: str(pick(row, ["name", "label", "title"])) ?? "Combination",
+    name: str(pick(row, ["name", "label", "title"])) ?? "Combinación",
     capacity: num(pick(row, ["capacity", "seats", "total_capacity"])),
     active: bool(pick(row, ["active", "is_active", "enabled"]), true),
     memberIds,
@@ -262,7 +262,7 @@ export function normalizeBooking(
       num(pick(row, ["party_size", "partysize", "guests", "people", "covers", "pax"])) ??
       0,
     name:
-      str(pick(row, ["customer_name", "name", "guest_name", "client_name"])) ?? "Guest",
+      str(pick(row, ["customer_name", "name", "guest_name", "client_name"])) ?? "Cliente",
     phone: str(pick(row, ["customer_phone", "phone", "phone_number", "tel"])) ?? "",
     email: str(pick(row, ["customer_email", "email"])),
     notes: str(pick(row, ["notes", "note", "special_requests", "comments"])),

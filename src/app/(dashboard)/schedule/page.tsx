@@ -3,7 +3,7 @@ import { getBookingHours, getSessionContext } from "@/lib/data";
 import { ScheduleView } from "@/components/ScheduleView";
 
 export const metadata: Metadata = {
-  title: "Booking hours",
+  title: "Horario de reservas",
 };
 
 export default async function SchedulePage() {

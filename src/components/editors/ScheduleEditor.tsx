@@ -87,7 +87,7 @@ export function ScheduleEditor({
                   <h3 className="text-[13px] font-semibold">{WEEKDAYS[index]}</h3>
                   {!anyActive && (
                     <span className="rounded-md bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-muted">
-                      Closed
+                      Cerrado
                     </span>
                   )}
                 </div>
@@ -96,7 +96,7 @@ export function ScheduleEditor({
                   onClick={() => setDialog({ dayOfWeek: index })}
                   className="inline-flex items-center gap-1 rounded-lg border border-line px-2 py-1 text-[11px] font-medium hover:bg-sunken"
                 >
-                  <PlusIcon size={11} /> Add
+                  <PlusIcon size={11} /> Añadir
                 </button>
               </div>
 
@@ -130,16 +130,16 @@ export function ScheduleEditor({
                         {busyId === period.id ? (
                           <Spinner size={11} />
                         ) : period.active ? (
-                          "Pause"
+                          "Pausar"
                         ) : (
-                          "Resume"
+                          "Reanudar"
                         )}
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setDialog({ period, dayOfWeek: index })}
-                        aria-label="Edit hours"
+                        aria-label="Editar horario"
                         className="flex size-7 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
                       >
                         <PencilIcon size={13} />
@@ -151,7 +151,7 @@ export function ScheduleEditor({
                           setRemoveError(null);
                           setRemoving(period);
                         }}
-                        aria-label="Remove hours"
+                        aria-label="Eliminar horario"
                         className="flex size-7 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
                       >
                         <TrashIcon size={13} />
@@ -180,13 +180,13 @@ export function ScheduleEditor({
 
       {removing && (
         <ConfirmDialog
-          title="Remove these hours?"
+          title="¿Eliminar este horario?"
           body={`${WEEKDAYS[removing.dayOfWeek]}, ${periodLabel(
             removing.startTime,
             removing.endTime,
             removing.spansNextDay
-          )}. Existing reservations are not affected.`}
-          confirmLabel="Remove"
+          )}. Las reservas existentes no se verán afectadas.`}
+          confirmLabel="Eliminar"
           destructive
           pending={busyId === removing.id}
           error={removeError}

@@ -24,7 +24,7 @@ export function StateChip({ active }: { active: boolean }) {
       }`}
     >
       <span className="size-1 rounded-full bg-current" aria-hidden />
-      {active ? "In service" : "Out of service"}
+      {active ? "En servicio" : "Fuera de servicio"}
     </span>
   );
 }
@@ -56,7 +56,7 @@ export function TablesEditor({
   const byZone = useMemo(() => {
     const map = new Map<string, RestaurantTable[]>();
     for (const table of tables) {
-      const key = table.zone ?? "Unassigned";
+      const key = table.zone ?? "Sin asignar";
       const list = map.get(key) ?? [];
       list.push(table);
       map.set(key, list);
@@ -94,15 +94,15 @@ export function TablesEditor({
       {tables.length === 0 ? (
         <EmptyState
           icon={<GridIcon size={18} />}
-          title="No tables yet"
-          body="Add the dining room's tables so reservations can be seated."
+          title="Todavía no hay mesas"
+          body="Añade las mesas de la sala para poder asignarlas a las reservas."
           action={
             <Button
               variant="primary"
               icon={<PlusIcon size={13} />}
               onClick={() => setDialog({})}
             >
-              Add your first table
+              Añadir la primera mesa
             </Button>
           }
         />
@@ -125,7 +125,7 @@ export function TablesEditor({
                       {table.name}
                     </span>
                     <span className="block text-[11px] text-muted">
-                      {table.capacity ?? "?"} seats
+                      {table.capacity ?? "?"} plazas
                     </span>
                   </span>
 
@@ -140,16 +140,16 @@ export function TablesEditor({
                     {busyId === table.id ? (
                       <Spinner size={11} />
                     ) : table.active ? (
-                      "Take out"
+                      "Retirar"
                     ) : (
-                      "Put back"
+                      "Reactivar"
                     )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setDialog({ table })}
-                    aria-label={`Edit ${table.name}`}
+                    aria-label={`Editar ${table.name}`}
                     className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
                   >
                     <PencilIcon size={14} />
@@ -162,7 +162,7 @@ export function TablesEditor({
                         setRemoveError(null);
                         setRemoving(table);
                       }}
-                      aria-label={`Delete ${table.name}`}
+                      aria-label={`Eliminar ${table.name}`}
                       className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
                     >
                       <TrashIcon size={14} />
@@ -190,9 +190,9 @@ export function TablesEditor({
 
       {removing && (
         <ConfirmDialog
-          title="Delete this table?"
-          body={`${removing.name} will be removed entirely. If it has ever held a reservation, take it out of service instead.`}
-          confirmLabel="Delete"
+          title="¿Eliminar esta mesa?"
+          body={`${removing.name} se eliminará por completo. Si ha tenido alguna reserva, retírala del servicio en su lugar.`}
+          confirmLabel="Eliminar"
           destructive
           pending={busyId === removing.id}
           error={removeError}
@@ -209,7 +209,7 @@ export function AddTableButton({
   zones,
   save,
   onSaved,
-  label = "Add table",
+  label = "Añadir mesa",
 }: {
   zones: string[];
   save: (input: TableInput) => Promise<ActionResult>;

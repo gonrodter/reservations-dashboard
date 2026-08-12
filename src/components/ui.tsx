@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { AlertIcon, Spinner, XIcon } from "@/components/icons";
 
 // Shared primitives carrying the dashboard's existing look: 13px controls,
@@ -198,6 +198,42 @@ export function Segmented<T extends string>({
   );
 }
 
+/** How long the closing animation runs before the overlay is unmounted. */
+const CLOSE_MS = 200;
+
+/**
+ * Keeps an overlay mounted while it animates out. Consumers render the exit
+ * class whenever `closing` is set and call `requestClose` from every dismissal
+ * affordance, so the panel is only removed once the motion has finished.
+ */
+export function useDismiss(onClose: () => void, open = true) {
+  const [closing, setClosing] = useState(false);
+
+  const requestClose = useCallback(() => {
+    if (closing) return;
+    setClosing(true);
+    window.setTimeout(onClose, CLOSE_MS);
+  }, [closing, onClose]);
+
+  // Overlays that stay mounted while empty (the detail drawer) reopen later on
+  // the same instance, so the closed state is cleared as the prop flips.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
+    if (!open) setClosing(false);
+  }
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") requestClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [requestClose]);
+
+  return { closing, requestClose };
+}
+
 /** Bottom sheet on phones, centred panel from tablet up. */
 export function Modal({
   title,
@@ -210,13 +246,7 @@ export function Modal({
   children: ReactNode;
   footer?: ReactNode;
 }) {
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  const { closing, requestClose } = useDismiss(onClose);
 
   return (
     <div
@@ -227,17 +257,21 @@ export function Modal({
     >
       <button
         type="button"
-        aria-label="Close"
-        onClick={onClose}
-        className="absolute inset-0 bg-ink/20"
+        aria-label="Cerrar"
+        onClick={requestClose}
+        className={`absolute inset-0 bg-ink/20 ${closing ? "overlay-out" : "overlay-in"}`}
       />
-      <div className="relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl bg-surface shadow-float md:rounded-2xl">
+      <div
+        className={`relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl bg-surface shadow-float md:rounded-2xl ${
+          closing ? "sheet-out" : "sheet-in"
+        }`}
+      >
         <header className="flex items-center justify-between border-b border-line px-4 py-3">
           <h2 className="text-sm font-semibold">{title}</h2>
           <button
             type="button"
-            onClick={onClose}
-            aria-label="Close"
+            onClick={requestClose}
+            aria-label="Cerrar"
             className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
           >
             <XIcon size={15} />
@@ -245,7 +279,9 @@ export function Modal({
         </header>
         {children}
         {footer && (
-          <footer className="flex gap-2 border-t border-line p-3">{footer}</footer>
+          <footer className="flex gap-2 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-3">
+            {footer}
+          </footer>
         )}
       </div>
     </div>
@@ -271,13 +307,7 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onClose: () => void;
 }) {
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  const { closing, requestClose } = useDismiss(onClose);
 
   return (
     <div
@@ -288,11 +318,15 @@ export function ConfirmDialog({
     >
       <button
         type="button"
-        aria-label="Close"
-        onClick={onClose}
-        className="absolute inset-0 bg-ink/20"
+        aria-label="Cerrar"
+        onClick={requestClose}
+        className={`absolute inset-0 bg-ink/20 ${closing ? "overlay-out" : "overlay-in"}`}
       />
-      <div className="relative w-full max-w-xs rounded-2xl bg-surface p-4 shadow-float">
+      <div
+        className={`relative w-full max-w-xs rounded-2xl bg-surface p-4 shadow-float ${
+          closing ? "panel-out" : "panel-in"
+        }`}
+      >
         <div
           className={`mx-auto flex size-9 items-center justify-center rounded-full ${
             destructive ? "bg-danger-soft text-danger" : "bg-warn-soft text-warn"
@@ -308,11 +342,11 @@ export function ConfirmDialog({
         <div className="mt-4 flex gap-2">
           <Button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             disabled={pending}
             className="flex-1 py-2"
           >
-            Keep it
+            Conservar
           </Button>
           <Button
             type="button"

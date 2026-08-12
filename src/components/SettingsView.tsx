@@ -28,8 +28,8 @@ export function SettingsView({
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-2xl px-3 py-4 md:px-6">
           <PageHeading
-            title="Reservation settings"
-            description="How your booking system behaves. These apply to your public booking page and to bookings your team takes by phone."
+            title="Ajustes de reservas"
+            description="Cómo funciona tu sistema de reservas. Se aplican tanto a la página pública como a las reservas que toma tu equipo por teléfono."
           />
 
           <div className="mt-4">

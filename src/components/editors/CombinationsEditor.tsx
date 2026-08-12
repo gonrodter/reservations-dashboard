@@ -73,8 +73,8 @@ export function CombinationsEditor({
       {combinations.length === 0 ? (
         <EmptyState
           icon={<LayersIcon size={18} />}
-          title="No combinations yet"
-          body="Define which tables may be pushed together for larger parties. Nothing is joined unless you say so."
+          title="Todavía no hay combinaciones"
+          body="Define qué mesas se pueden unir para grupos grandes. No se unirá ninguna si no lo indicas."
           action={
             <Button
               variant="primary"
@@ -82,7 +82,7 @@ export function CombinationsEditor({
               onClick={() => setDialog({})}
               disabled={tables.length < 2}
             >
-              Add a combination
+              Añadir una combinación
             </Button>
           }
         />
@@ -101,14 +101,14 @@ export function CombinationsEditor({
                 </span>
                 <span className="mt-0.5 flex flex-wrap items-center gap-1">
                   <span className="text-[11px] text-muted">
-                    {combination.capacity ?? "?"} seats together ·
+                    {combination.capacity ?? "?"} plazas combinadas ·
                   </span>
                   {combination.memberIds.map((id) => (
                     <span
                       key={id}
                       className="rounded-md border border-line bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-ink-soft"
                     >
-                      {tableById.get(id)?.name ?? "Removed table"}
+                      {tableById.get(id)?.name ?? "Mesa eliminada"}
                     </span>
                   ))}
                 </span>
@@ -125,16 +125,16 @@ export function CombinationsEditor({
                 {busyId === combination.id ? (
                   <Spinner size={11} />
                 ) : combination.active ? (
-                  "Take out"
+                  "Retirar"
                 ) : (
-                  "Put back"
+                  "Reactivar"
                 )}
               </button>
 
               <button
                 type="button"
                 onClick={() => setDialog({ combination })}
-                aria-label={`Edit ${combination.name}`}
+                aria-label={`Editar ${combination.name}`}
                 className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
               >
                 <PencilIcon size={14} />
@@ -147,7 +147,7 @@ export function CombinationsEditor({
                     setRemoveError(null);
                     setRemoving(combination);
                   }}
-                  aria-label={`Delete ${combination.name}`}
+                  aria-label={`Eliminar ${combination.name}`}
                   className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
                 >
                   <TrashIcon size={14} />
@@ -173,9 +173,9 @@ export function CombinationsEditor({
 
       {removing && (
         <ConfirmDialog
-          title="Delete this combination?"
-          body={`${removing.name} will no longer be offered for large parties. The physical tables are not affected.`}
-          confirmLabel="Delete"
+          title="¿Eliminar esta combinación?"
+          body={`${removing.name} dejará de ofrecerse para grupos grandes. Las mesas físicas no se verán afectadas.`}
+          confirmLabel="Eliminar"
           destructive
           pending={busyId === removing.id}
           error={removeError}
@@ -192,7 +192,7 @@ export function AddCombinationButton({
   tables,
   save,
   onSaved,
-  label = "Add combination",
+  label = "Añadir combinación",
 }: {
   tables: RestaurantTable[];
   save: (input: CombinationInput) => Promise<ActionResult>;

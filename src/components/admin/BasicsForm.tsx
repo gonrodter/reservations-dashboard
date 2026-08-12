@@ -63,7 +63,7 @@ export function BasicsForm({
   return (
     <form onSubmit={handleSubmit}>
       <Card className="space-y-4 p-4">
-        <Field label="Restaurant name" required>
+        <Field label="Nombre del restaurante" required>
           <Input
             required
             value={name}
@@ -73,25 +73,25 @@ export function BasicsForm({
         </Field>
 
         <Field
-          label="Production domain"
+          label="Dominio de producción"
           required
-          hint="Paste the restaurant's website address. A full URL or a www prefix is fine."
+          hint="Pega la dirección web del restaurante. Puedes usar una URL completa o el prefijo www."
         >
           <Input
             required
             value={domain}
             onChange={(event) => setDomain(event.target.value)}
-            placeholder="https://www.restaurant.com"
+            placeholder="https://www.restaurante.com"
           />
         </Field>
 
         <Field
-          label="Owner email"
+          label="Correo del propietario"
           required
           hint={
             initialOwnerEmail
-              ? "Changing this sends a new password invitation and immediately removes the previous owner's access."
-              : "We will email the owner a secure link to create their password."
+              ? "Al cambiarlo se envía una nueva invitación y se retira inmediatamente el acceso al propietario anterior."
+              : "Enviaremos al propietario un enlace seguro para crear su contraseña."
           }
         >
           <Input
@@ -100,17 +100,17 @@ export function BasicsForm({
             autoComplete="email"
             value={ownerEmail}
             onChange={(event) => setOwnerEmail(event.target.value)}
-            placeholder="owner@restaurant.com"
+            placeholder="propietario@restaurante.com"
           />
         </Field>
 
         <div className="rounded-lg bg-sunken px-3 py-2.5">
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted">
-            Booking identifier
+            Identificador de reservas
           </p>
           {slug.length === 0 ? (
             <p className="mt-0.5 text-[13px] text-muted">
-              Enter a domain to see the identifier.
+              Introduce un dominio para ver el identificador.
             </p>
           ) : (
             <>
@@ -123,8 +123,8 @@ export function BasicsForm({
               </p>
               <p className="mt-1 text-[11px] leading-4 text-muted">
                 {slugValid
-                  ? "This is what the reservation system will use to recognise the restaurant."
-                  : "That does not look like a domain yet. Use something like restaurant.com."}
+                  ? "Este es el identificador que usará el sistema de reservas para reconocer el restaurante."
+                  : "Todavía no parece un dominio. Usa algo como restaurante.com."}
               </p>
             </>
           )}
@@ -146,7 +146,7 @@ export function BasicsForm({
         </Button>
         {saved && !pending && (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-ok">
-            <CheckIcon size={13} /> Saved
+            <CheckIcon size={13} /> Guardado
           </span>
         )}
       </div>

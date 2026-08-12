@@ -39,7 +39,7 @@ export function TableCapacityPolicy({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-xl">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Table assignment rule
+            Regla de asignación de mesas
           </h3>
           <div className="mt-2">
             <Toggle
@@ -48,13 +48,13 @@ export function TableCapacityPolicy({
                 setValue(next);
                 setSaved(false);
               }}
-              label="Match parties closely to table capacity"
+              label="Ajustar los grupos a la capacidad de las mesas"
             />
           </div>
           <p className="mt-1 pl-10 text-[11px] leading-4 text-muted">
-            When on, a party can only use a table with its exact number of seats
-            or one spare seat. If all eligible tables are occupied, that time is
-            not offered even when a larger table is free.
+            Al activarlo, un grupo solo puede usar una mesa con el número exacto
+            de plazas o una plaza libre. Si todas las mesas aptas están ocupadas,
+            esa hora no se ofrece aunque haya una mesa más grande disponible.
           </p>
         </div>
         <Button
@@ -64,13 +64,13 @@ export function TableCapacityPolicy({
           disabled={value === enabled}
           onClick={handleSave}
         >
-          Save rule
+          Guardar regla
         </Button>
       </div>
       {error && <div className="mt-3"><ErrorNote>{error}</ErrorNote></div>}
       {saved && !pending && (
         <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-ok">
-          <CheckIcon size={13} /> Saved
+          <CheckIcon size={13} /> Guardado
         </span>
       )}
     </Card>

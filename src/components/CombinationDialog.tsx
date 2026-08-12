@@ -75,7 +75,7 @@ export function CombinationDialog({
   const grouped = useMemo(() => {
     const map = new Map<string, RestaurantTable[]>();
     for (const table of tables) {
-      const key = table.zone ?? "Unassigned";
+      const key = table.zone ?? "Sin asignar";
       const list = map.get(key) ?? [];
       list.push(table);
       map.set(key, list);
@@ -85,25 +85,25 @@ export function CombinationDialog({
 
   return (
     <Modal
-      title={combination ? "Edit combination" : "New combination"}
+      title={combination ? "Editar combinación" : "Nueva combinación"}
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className="contents">
         <div className="thin-scroll flex-1 space-y-4 overflow-y-auto px-4 py-4">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Name" required>
+            <Field label="Nombre" required>
               <Input
                 required
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="e.g. Tables 1 + 2"
+                placeholder="p. ej., Mesas 1 + 2"
               />
             </Field>
             <Field
-              label="Seats together"
+              label="Plazas combinadas"
               required
               hint={
-                memberIds.length > 0 ? `Tables add up to ${seatsOfMembers}.` : undefined
+                memberIds.length > 0 ? `Las mesas suman ${seatsOfMembers} plazas.` : undefined
               }
             >
               <Input
@@ -119,16 +119,15 @@ export function CombinationDialog({
 
           <div>
             <p className="mb-1 text-xs font-medium text-ink-soft">
-              Tables to join <span className="text-danger">*</span>
+              Mesas que se unirán <span className="text-danger">*</span>
             </p>
             <p className="mb-2 text-[11px] leading-4 text-muted">
-              Pick at least two. Only these tables will ever be joined for a
-              large party.
+              Elige al menos dos. Solo estas mesas se unirán para grupos grandes.
             </p>
 
             {tables.length === 0 ? (
               <p className="rounded-lg bg-sunken px-3 py-2.5 text-xs text-muted">
-                Add tables first, then you can define which ones may be joined.
+                Añade mesas primero para poder definir cuáles se pueden unir.
               </p>
             ) : (
               <div className="space-y-3">
@@ -173,7 +172,7 @@ export function CombinationDialog({
             <Toggle
               checked={active}
               onChange={setActive}
-              label={active ? "Available for bookings" : "Not in use"}
+              label={active ? "Disponible para reservas" : "Fuera de uso"}
             />
           </div>
 
@@ -182,7 +181,7 @@ export function CombinationDialog({
 
         <footer className="flex gap-2 border-t border-line p-3">
           <Button type="button" onClick={onClose} className="flex-1 py-2">
-            Discard
+            Descartar
           </Button>
           <Button
             type="submit"
@@ -191,7 +190,7 @@ export function CombinationDialog({
             disabled={memberIds.length < 2}
             className="flex-1 py-2"
           >
-            {combination ? "Save combination" : "Add combination"}
+            {combination ? "Guardar combinación" : "Añadir combinación"}
           </Button>
         </footer>
       </form>

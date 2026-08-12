@@ -3,7 +3,7 @@ import { LogoMark } from "@/components/icons";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Sign in · Reservations",
+  title: "Iniciar sesión · Reservas",
 };
 
 export default function LoginPage() {
@@ -15,14 +15,14 @@ export default function LoginPage() {
             <LogoMark size={19} />
           </div>
           <div>
-            <h1 className="text-sm font-semibold">Reservations</h1>
-            <p className="text-xs text-muted">Staff dashboard</p>
+            <h1 className="text-sm font-semibold">Reservas</h1>
+            <p className="text-xs text-muted">Panel del equipo</p>
           </div>
         </div>
 
         <p className="mt-5 text-xs leading-5 text-muted">
-          Sign in with the account your restaurant gave you. Accounts are
-          created by your administrator.
+          Inicia sesión con la cuenta que te proporcionó tu restaurante. Las
+          cuentas las crea el administrador.
         </p>
 
         <div className="mt-4">

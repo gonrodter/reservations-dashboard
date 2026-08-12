@@ -3,16 +3,16 @@
 // timezone, so every conversion goes through the helpers here.
 
 export const WEEKDAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
 ] as const;
 
-export const WEEKDAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+export const WEEKDAYS_SHORT = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"] as const;
 
 /** Minutes that `timezone` is ahead of UTC at the given instant. */
 function offsetMinutes(instant: Date, timezone?: string): number {
@@ -106,7 +106,7 @@ export function formatDayLabel(isoDate: string): string {
   if (Number.isNaN(date.getTime())) return isoDate;
   // The year is only worth the space when it is not the current one.
   const sameYear = isoDate.slice(0, 4) === String(new Date().getUTCFullYear());
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-ES", {
     timeZone: "UTC",
     weekday: "long",
     day: "numeric",
@@ -118,7 +118,7 @@ export function formatDayLabel(isoDate: string): string {
 export function formatShortDay(isoDate: string): string {
   const date = new Date(`${isoDate}T12:00:00Z`);
   if (Number.isNaN(date.getTime())) return isoDate;
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-ES", {
     timeZone: "UTC",
     weekday: "short",
     day: "numeric",
@@ -129,7 +129,7 @@ export function formatShortDay(isoDate: string): string {
 export function formatMonthYear(isoDate: string): string {
   const date = new Date(`${isoDate}T12:00:00Z`);
   if (Number.isNaN(date.getTime())) return isoDate;
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-ES", {
     timeZone: "UTC",
     month: "long",
     year: "numeric",
@@ -159,7 +159,7 @@ export function periodLabel(
   spansNextDay: boolean
 ): string {
   const range = `${start.slice(0, 5)} – ${end.slice(0, 5)}`;
-  return spansNextDay ? `${range} (next day)` : range;
+  return spansNextDay ? `${range} (día siguiente)` : range;
 }
 
 /** True when the end time falls before the start, i.e. the period is overnight. */

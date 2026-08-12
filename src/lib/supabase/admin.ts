@@ -12,7 +12,7 @@ export function createAdminClient() {
 
   if (!url || !secretKey) {
     throw new DataError(
-      "Supabase Auth administration is not configured. Add SUPABASE_SECRET_KEY."
+      "La administración de Supabase Auth no está configurada. Añade SUPABASE_SECRET_KEY."
     );
   }
 

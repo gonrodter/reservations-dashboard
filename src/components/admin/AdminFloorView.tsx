@@ -13,7 +13,7 @@ import { ReservationCard } from "@/components/ReservationCard";
 import { FloorView } from "@/components/FloorView";
 import { DetailDrawer } from "@/components/DetailDrawer";
 import { EmptyState } from "@/components/EmptyState";
-import { Select } from "@/components/ui";
+import { Segmented, Select } from "@/components/ui";
 import { CalendarIcon, ChevronRightIcon, Spinner, TableIcon } from "@/components/icons";
 import { useLiveBookings } from "@/components/useLiveBookings";
 
@@ -55,15 +55,15 @@ export function AdminFloorView({
     const inService = (snapshot?.tables ?? []).filter((table) => table.active);
 
     return [
-      { label: "Bookings", value: String(live.length) },
+      { label: "Reservas", value: String(live.length) },
       {
-        label: "Covers",
+        label: "Comensales",
         value: String(live.reduce((sum, booking) => sum + (booking.partySize || 0), 0)),
       },
-      { label: "Next", value: next?.time ?? "—" },
+      { label: "Próxima", value: next?.time ?? "—" },
       cancelled > 0
-        ? { label: "Cancelled", value: String(cancelled), tone: "danger" as const }
-        : { label: "Tables", value: String(inService.length) },
+        ? { label: "Canceladas", value: String(cancelled), tone: "danger" as const }
+        : { label: "Mesas", value: String(inService.length) },
     ];
   }, [snapshot, nowMs]);
 
@@ -81,12 +81,12 @@ export function AdminFloorView({
   if (restaurants.length === 0) {
     return (
       <>
-        <TopBar title="Terron Studio admin" />
+        <TopBar title="Administración de Terron Studio" />
         <div className="flex min-h-0 flex-1 items-center justify-center">
           <EmptyState
             icon={<TableIcon size={18} />}
-            title="No live restaurants yet"
-            body="Once a restaurant is activated, its table map appears here."
+            title="Todavía no hay restaurantes activos"
+            body="Cuando se active un restaurante, su plano de mesas aparecerá aquí."
           />
         </div>
       </>
@@ -96,12 +96,12 @@ export function AdminFloorView({
   return (
     <>
       <TopBar
-        title="Terron Studio admin"
+        title="Administración de Terron Studio"
         extra={
           <>
             {switching && <Spinner size={14} className="text-muted" />}
             <Select
-              aria-label="Restaurant"
+              aria-label="Restaurante"
               value={restaurant?.id ?? ""}
               onChange={(event) => pick(event.target.value)}
               className="w-auto max-w-44 py-1"
@@ -120,8 +120,8 @@ export function AdminFloorView({
         <div className="flex min-h-0 flex-1 items-center justify-center">
           <EmptyState
             icon={<TableIcon size={18} />}
-            title="Restaurant not found"
-            body="Pick another restaurant from the list above."
+            title="Restaurante no encontrado"
+            body="Elige otro restaurante de la lista superior."
           />
         </div>
       ) : (
@@ -166,9 +166,29 @@ function FloorBody({
   const { restaurant, tables, bookings, today } = snapshot;
   useLiveBookings(restaurant.id);
 
+  const [pane, setPane] = useState<"map" | "list">("map");
+
   return (
+    <>
+    {/* Pane switch, phones and tablets only */}
+    <div className="flex shrink-0 items-center justify-end border-b border-line px-3 py-2 lg:hidden">
+      <Segmented
+        label="Vista"
+        value={pane}
+        options={[
+          { value: "map", label: "Plano" },
+          { value: "list", label: "Reservas" },
+        ]}
+        onChange={setPane}
+      />
+    </div>
+
     <div className="flex min-h-0 flex-1">
-      <aside className="flex w-full min-w-0 flex-col border-line lg:w-[360px] lg:shrink-0 lg:border-r xl:w-[380px]">
+      <aside
+        className={`w-full min-w-0 flex-col border-line lg:flex lg:w-[360px] lg:shrink-0 lg:border-r xl:w-[380px] ${
+          pane === "list" ? "flex" : "hidden"
+        }`}
+      >
         <div className="shrink-0 px-3 pb-2 pt-3 md:px-4">
           <div className="flex items-baseline justify-between gap-2">
             <div className="min-w-0">
@@ -181,7 +201,7 @@ function FloorBody({
               href={`/admin/restaurants/${restaurant.id}`}
               className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-sunken px-1.5 py-0.5 text-[11px] font-medium text-ink-soft hover:text-ink"
             >
-              Config
+              Configuración
               <ChevronRightIcon size={11} />
             </Link>
           </div>
@@ -194,8 +214,8 @@ function FloorBody({
           {bookings.length === 0 ? (
             <EmptyState
               icon={<CalendarIcon size={18} />}
-              title="No reservations today"
-              body="This restaurant has nothing booked for today."
+              title="No hay reservas para hoy"
+              body="Este restaurante no tiene reservas para hoy."
             />
           ) : (
             bookings.map((booking) => (
@@ -210,7 +230,9 @@ function FloorBody({
         </div>
       </aside>
 
-      <main className="hidden min-w-0 flex-1 lg:block">
+      <main
+        className={`min-w-0 flex-1 lg:block ${pane === "map" ? "block" : "hidden"}`}
+      >
         <FloorView
           tables={tables}
           bookings={bookings}
@@ -222,5 +244,6 @@ function FloorBody({
         />
       </main>
     </div>
+    </>
   );
 }

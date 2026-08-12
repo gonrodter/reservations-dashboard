@@ -3,7 +3,7 @@ import { getCombinations, getSessionContext, getSettings, getTables } from "@/li
 import { TablesView } from "@/components/TablesView";
 
 export const metadata: Metadata = {
-  title: "Tables",
+  title: "Mesas",
 };
 
 export default async function TablesPage() {

@@ -96,12 +96,12 @@ export async function login(
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (!email || !password) return { error: "Enter your email and password." };
+  if (!email || !password) return { error: "Introduce tu correo electrónico y tu contraseña." };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) return { error: "Incorrect email or password." };
+  if (error) return { error: "El correo electrónico o la contraseña son incorrectos." };
 
   redirect("/");
 }
@@ -121,7 +121,7 @@ export async function getAvailability(
   try {
     const restaurant = await requireRestaurant();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || partySize < 1) {
-      return { ok: false, error: "Choose a valid date and party size." };
+      return { ok: false, error: "Elige una fecha y un número de comensales válidos." };
     }
     const [settings, bookingHours, specialDates] = await Promise.all([
       getSettings(restaurant.id),
@@ -168,13 +168,13 @@ export async function createReservation(input: {
     const restaurant = await requireRestaurant();
     const settings = await getSettings(restaurant.id);
     if (!input.name.trim() || !input.phone.trim()) {
-      return { ok: false, error: "Name and phone are required." };
+      return { ok: false, error: "El nombre y el teléfono son obligatorios." };
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !/^\d{2}:\d{2}$/.test(input.time)) {
-      return { ok: false, error: "Choose a valid date and time." };
+      return { ok: false, error: "Elige una fecha y una hora válidas." };
     }
     if (isPastSlot(input.date, input.time, restaurant.timezone)) {
-      return { ok: false, error: "That time has already passed. Choose a later slot." };
+      return { ok: false, error: "Esa hora ya ha pasado. Elige una franja posterior." };
     }
     await createBooking({
       restaurantSlug: restaurant.slug,
@@ -214,12 +214,12 @@ export async function updateReservation(input: {
 }): Promise<ActionResult> {
   try {
     const { restaurant, booking } = await findAccessibleBooking(input.bookingId);
-    if (!booking) return { ok: false, error: "This reservation could not be found." };
+    if (!booking) return { ok: false, error: "No se encontró esta reserva." };
     if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !/^\d{2}:\d{2}$/.test(input.time)) {
-      return { ok: false, error: "Choose a valid date and time." };
+      return { ok: false, error: "Elige una fecha y una hora válidas." };
     }
     if (isPastSlot(input.date, input.time, restaurant.timezone)) {
-      return { ok: false, error: "That time has already passed. Choose a later slot." };
+      return { ok: false, error: "Esa hora ya ha pasado. Elige una franja posterior." };
     }
     await updateBooking({
       restaurantSlug: restaurant.slug,
@@ -243,7 +243,7 @@ export async function updateReservation(input: {
 export async function cancelReservation(bookingId: string): Promise<ActionResult> {
   try {
     const { restaurant, booking } = await findAccessibleBooking(bookingId);
-    if (!booking) return { ok: false, error: "This reservation could not be found." };
+    if (!booking) return { ok: false, error: "No se encontró esta reserva." };
     await cancelBooking({
       restaurantSlug: restaurant.slug,
       bookingId: booking.id,

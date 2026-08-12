@@ -13,7 +13,7 @@ export function NewRestaurantForm() {
 
   return (
     <>
-      <TopBar title="Terron Studio admin" />
+      <TopBar title="Administración de Terron Studio" />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-xl px-3 py-4 md:px-6">
@@ -21,19 +21,19 @@ export function NewRestaurantForm() {
             href="/admin/restaurants"
             className="inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-ink"
           >
-            <ChevronLeftIcon size={13} /> All restaurants
+            <ChevronLeftIcon size={13} /> Todos los restaurantes
           </Link>
 
           <div className="mt-3">
             <PageHeading
-              title="Onboard a restaurant"
-              description="Start with its identity and owner. We will send the owner a password invitation, while the restaurant stays switched off until setup is complete."
+              title="Incorporar un restaurante"
+              description="Empieza con su identidad y propietario. Enviaremos al propietario una invitación para crear su contraseña, mientras el restaurante permanece desactivado hasta completar la configuración."
             />
           </div>
 
           <div className="mt-4">
             <BasicsForm
-              submitLabel="Create and continue"
+              submitLabel="Crear y continuar"
               save={async (input) => {
                 const result = await createRestaurant(input);
                 if (result.ok) {

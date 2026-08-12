@@ -11,7 +11,7 @@ export type ActionResult<T = undefined> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
-const GENERIC_ERROR = "Something went wrong. Please try again.";
+const GENERIC_ERROR = "Se produjo un error. Inténtalo de nuevo.";
 
 /**
  * Maps internal failures to messages safe to show restaurant staff. Anything

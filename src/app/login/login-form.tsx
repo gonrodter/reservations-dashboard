@@ -11,21 +11,21 @@ export function LoginForm() {
     <form action={formAction} className="space-y-3">
       <label className="block">
         <span className="mb-1 block text-xs font-medium text-ink-soft">
-          Email
+          Correo electrónico
         </span>
         <input
           name="email"
           type="email"
           required
           autoComplete="email"
-          placeholder="you@restaurant.com"
+          placeholder="tu@restaurante.com"
           className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted focus:border-ink"
         />
       </label>
 
       <label className="block">
         <span className="mb-1 block text-xs font-medium text-ink-soft">
-          Password
+          Contraseña
         </span>
         <input
           name="password"
@@ -49,7 +49,7 @@ export function LoginForm() {
         className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-85 disabled:opacity-50"
       >
         {pending && <Spinner size={14} />}
-        Sign in
+        Iniciar sesión
       </button>
     </form>
   );

@@ -37,6 +37,22 @@ function blockSize(capacity: number | null): number {
 
 const CHAIR = 12;
 
+/**
+ * Size the plane covers on screen once the isometric transform is applied:
+ * rotateZ(45deg) turns the square into a diamond of side × √2, and rotateX(54deg)
+ * squashes its height by cos(54deg). The margin leaves room for chairs and the
+ * upright badges that stand above a table.
+ */
+const PROJECTED_WIDTH = PLANE_SIZE * Math.SQRT2 + 120;
+const PROJECTED_HEIGHT = PLANE_SIZE * Math.SQRT2 * Math.cos((54 * Math.PI) / 180) + 140;
+
+const MIN_ZOOM = 0.6;
+const MAX_ZOOM = 4;
+
+function clampZoom(value: number): number {
+  return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
+}
+
 /** Upcoming times printed on a table before they collapse into "+N". */
 const MAX_UPCOMING = 2;
 
@@ -202,6 +218,223 @@ export function FloorView({
     });
   }, [activeTables, bookings, now, timezone, fallbackMinutes]);
 
+  // ------------------------------------------------------- zoom and pan
+
+  const viewportRef = useRef<HTMLDivElement>(null);
+  // Scale that fits the whole floor in the panel, so a phone opens on the same
+  // overview a desktop shows instead of a cropped corner.
+  const [fit, setFit] = useState(0.5);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const scale = fit * zoom;
+
+  useEffect(() => {
+    const node = viewportRef.current;
+    if (!node) return;
+    const measure = () => {
+      const { clientWidth, clientHeight } = node;
+      if (!clientWidth || !clientHeight) return;
+      setFit(
+        Math.max(
+          0.16,
+          Math.min(
+            0.9,
+            Math.min(clientWidth / PROJECTED_WIDTH, clientHeight / PROJECTED_HEIGHT)
+          )
+        )
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  /** Keeps the map from being dragged entirely out of its panel. */
+  const clampPan = useCallback(
+    (next: { x: number; y: number }, activeZoom: number) => {
+      const limitX = (PROJECTED_WIDTH * fit * activeZoom) / 2;
+      const limitY = (PROJECTED_HEIGHT * fit * activeZoom) / 2;
+      return {
+        x: Math.max(-limitX, Math.min(limitX, next.x)),
+        y: Math.max(-limitY, Math.min(limitY, next.y)),
+      };
+    },
+    [fit]
+  );
+
+  /**
+   * Zooms around a focal point given in pixels from the panel's centre, so the
+   * spot under the fingers (or under the cursor) stays put.
+   */
+  const zoomAround = useCallback(
+    (
+      nextZoom: number,
+      focus: { x: number; y: number },
+      from: { zoom: number; pan: { x: number; y: number } }
+    ) => {
+      const target = clampZoom(nextZoom);
+      const ratio = target / from.zoom;
+      setZoom(target);
+      setPan(
+        clampPan(
+          {
+            x: focus.x - (focus.x - from.pan.x) * ratio,
+            y: focus.y - (focus.y - from.pan.y) * ratio,
+          },
+          target
+        )
+      );
+    },
+    [clampPan]
+  );
+
+  // Latest view for listeners that are registered once (wheel) or fire outside
+  // React's data flow.
+  const viewRef = useRef({ zoom, pan });
+  useEffect(() => {
+    viewRef.current = { zoom, pan };
+  }, [zoom, pan]);
+
+  const focusFrom = useCallback((clientX: number, clientY: number) => {
+    const rect = viewportRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
+    return {
+      x: clientX - rect.left - rect.width / 2,
+      y: clientY - rect.top - rect.height / 2,
+    };
+  }, []);
+
+  // Ctrl+wheel is what a trackpad pinch sends. The listener is registered by
+  // hand because React's wheel handler is passive and cannot block the
+  // browser's own page zoom.
+  useEffect(() => {
+    const node = viewportRef.current;
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      const current = viewRef.current;
+      zoomAround(
+        current.zoom * Math.exp(-event.deltaY / 260),
+        focusFrom(event.clientX, event.clientY),
+        current
+      );
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, [zoomAround, focusFrom]);
+
+  const gestureRef = useRef<
+    | {
+        mode: "pan" | "pinch";
+        point: { x: number; y: number };
+        distance: number;
+        from: { zoom: number; pan: { x: number; y: number } };
+      }
+    | null
+  >(null);
+
+  function touchCentre(touches: React.TouchList) {
+    let x = 0;
+    let y = 0;
+    for (let i = 0; i < touches.length; i++) {
+      x += touches[i].clientX;
+      y += touches[i].clientY;
+    }
+    return { x: x / touches.length, y: y / touches.length };
+  }
+
+  function touchDistance(touches: React.TouchList) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+  }
+
+  function onTouchStart(event: React.TouchEvent) {
+    const touches = event.touches;
+    const from = { zoom, pan };
+
+    if (touches.length >= 2) {
+      gestureRef.current = {
+        mode: "pinch",
+        point: touchCentre(touches),
+        distance: touchDistance(touches),
+        from,
+      };
+      return;
+    }
+
+    // One finger drags the map, except while tables are being arranged, where
+    // the same gesture belongs to the table under the finger.
+    if (arranging) {
+      gestureRef.current = null;
+      return;
+    }
+    gestureRef.current = {
+      mode: "pan",
+      point: touchCentre(touches),
+      distance: 0,
+      from,
+    };
+  }
+
+  function onTouchMove(event: React.TouchEvent) {
+    const gesture = gestureRef.current;
+    if (!gesture) return;
+    const touches = event.touches;
+
+    if (gesture.mode === "pinch") {
+      if (touches.length < 2) return;
+      const distance = touchDistance(touches);
+      if (!gesture.distance) return;
+      const centre = touchCentre(touches);
+      zoomAround(
+        gesture.from.zoom * (distance / gesture.distance),
+        focusFrom(centre.x, centre.y),
+        gesture.from
+      );
+      return;
+    }
+
+    if (touches.length !== 1) return;
+    const centre = touchCentre(touches);
+    setPan(
+      clampPan(
+        {
+          x: gesture.from.pan.x + (centre.x - gesture.point.x),
+          y: gesture.from.pan.y + (centre.y - gesture.point.y),
+        },
+        gesture.from.zoom
+      )
+    );
+  }
+
+  function onTouchEnd(event: React.TouchEvent) {
+    if (event.touches.length === 0) {
+      gestureRef.current = null;
+      return;
+    }
+    // Lifting one finger of a pinch continues as a drag from where it is now.
+    gestureRef.current = {
+      mode: arranging ? "pinch" : "pan",
+      point: touchCentre(event.touches),
+      distance:
+        event.touches.length >= 2 ? touchDistance(event.touches) : 0,
+      from: { zoom, pan },
+    };
+  }
+
+  function stepZoom(factor: number) {
+    const current = viewRef.current;
+    zoomAround(current.zoom * factor, { x: 0, y: 0 }, current);
+  }
+
+  function resetView() {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }
+
   // ---------------------------------------------------------- arranging
 
   const saved = useMemo(() => layoutFrom(activeTables), [activeTables]);
@@ -278,7 +511,7 @@ export function FloorView({
     measureBasis();
     window.addEventListener("resize", measureBasis);
     return () => window.removeEventListener("resize", measureBasis);
-  }, [measureBasis, arranging]);
+  }, [measureBasis, arranging, scale, pan]);
 
   /**
    * Moves a table to a whole grid position. Two tables never stack: dropping
@@ -427,17 +660,30 @@ export function FloorView({
     return (
       <EmptyState
         icon={<TableIcon size={18} />}
-        title="No tables in service"
-        body="Add tables under Tables and today's floor will appear here."
+        title="No hay mesas en servicio"
+        body="Añade mesas en la sección Mesas y el plano de hoy aparecerá aquí."
       />
     );
   }
 
   return (
     <div className="relative h-full overflow-hidden bg-sunken/60">
-      {/* Isometric floor */}
-      <div className="iso-stage flex h-full items-center justify-center">
-        <div className="scale-[0.5] lg:scale-[0.62] xl:scale-[0.72] 2xl:scale-[0.82]">
+      {/* Isometric floor. The stage is pinch-zoomable and draggable, so the
+          same overview works on a phone as on a desktop panel. */}
+      <div
+        ref={viewportRef}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchEnd}
+        className="iso-stage flex h-full touch-none select-none items-center justify-center"
+      >
+        <div
+          className="will-change-transform"
+          style={{
+            transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${scale})`,
+          }}
+        >
           <div
             ref={planeRef}
             className="iso-plane relative"
@@ -534,10 +780,10 @@ export function FloorView({
                     }
                     aria-label={
                       arranging
-                        ? `Table ${table.name}, position ${position.x + 1}, ${position.y + 1}. Use the arrow keys to move it.`
+                        ? `Mesa ${table.name}, posición ${position.x + 1}, ${position.y + 1}. Usa las flechas para moverla.`
                         : booking
-                          ? `Table ${table.name}: ${booking.name}, ${booking.partySize} guests at ${booking.time}`
-                          : `Table ${table.name}, free`
+                          ? `Mesa ${table.name}: ${booking.name}, ${booking.partySize} comensales a las ${booking.time}`
+                          : `Mesa ${table.name}, libre`
                     }
                   >
                     {chairSpots(size, table.capacity).map((spot, i) => (
@@ -581,7 +827,7 @@ export function FloorView({
                         {seated && (
                           <span
                             className="flex size-7 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-surface shadow-float"
-                            title={`${seated.name} · ${seated.partySize} guests, seated`}
+                            title={`${seated.name} · ${seated.partySize} comensales, sentados`}
                           >
                             {seated.partySize}
                           </span>
@@ -591,7 +837,7 @@ export function FloorView({
                             {upcoming.slice(0, MAX_UPCOMING).map((booking) => (
                               <span
                                 key={booking.id}
-                                title={`${booking.time} · ${booking.name} · ${booking.partySize} guests`}
+                                title={`${booking.time} · ${booking.name} · ${booking.partySize} comensales`}
                                 className="rounded-full border border-line-strong bg-surface px-1.5 py-0.5 text-[10px] font-semibold tabular-nums shadow-card"
                               >
                                 {booking.time}
@@ -599,7 +845,7 @@ export function FloorView({
                             ))}
                             {upcoming.length > MAX_UPCOMING && (
                               <span
-                                title={`${upcoming.length - MAX_UPCOMING} more today`}
+                                title={`${upcoming.length - MAX_UPCOMING} más hoy`}
                                 className="rounded-full border border-line-strong bg-sunken px-1.5 py-0.5 text-[10px] font-semibold text-muted shadow-card"
                               >
                                 +{upcoming.length - MAX_UPCOMING}
@@ -617,12 +863,43 @@ export function FloorView({
         </div>
       </div>
 
+      {/* Zoom controls: the pinch gesture does the same, these keep the map
+          usable with a mouse and for anyone who cannot pinch. */}
+      <div className="absolute right-3 top-3 z-10 flex flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-card">
+        <button
+          type="button"
+          onClick={() => stepZoom(1.25)}
+          aria-label="Acercar"
+          className="flex size-8 items-center justify-center text-sm font-semibold text-ink-soft hover:bg-sunken disabled:opacity-30"
+          disabled={zoom >= MAX_ZOOM}
+        >
+          +
+        </button>
+        <button
+          type="button"
+          onClick={() => stepZoom(0.8)}
+          aria-label="Alejar"
+          className="flex size-8 items-center justify-center border-t border-line text-sm font-semibold text-ink-soft hover:bg-sunken disabled:opacity-30"
+          disabled={zoom <= MIN_ZOOM}
+        >
+          −
+        </button>
+        <button
+          type="button"
+          onClick={resetView}
+          aria-label="Ajustar el plano a la pantalla"
+          className="flex h-8 items-center justify-center border-t border-line px-1.5 text-[10px] font-medium text-muted hover:bg-sunken"
+        >
+          Ajustar
+        </button>
+      </div>
+
       {/* Legend, or the arranging controls in its place */}
       {arranging ? (
         <div className="absolute inset-x-4 bottom-4 z-10 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 shadow-float">
           <p className="text-[11px] leading-4 text-muted">
-            Drag a table, or select one and use the arrow keys. Tables move one
-            position at a time along the floor.
+            Arrastra una mesa o selecciónala y usa las flechas. Las mesas se
+            mueven una posición cada vez por el plano.
           </p>
           <div className="ml-auto flex items-center gap-2">
             <button
@@ -631,7 +908,7 @@ export function FloorView({
               disabled={saving}
               className="rounded-lg border border-line px-2.5 py-1 text-[11px] font-medium hover:bg-sunken disabled:opacity-40"
             >
-              Discard
+              Descartar
             </button>
             <button
               type="button"
@@ -640,7 +917,7 @@ export function FloorView({
               className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-2.5 py-1 text-[11px] font-medium text-surface hover:opacity-85 disabled:opacity-40"
             >
               {saving && <Spinner size={11} />}
-              Save layout
+              Guardar plano
             </button>
           </div>
           {error && (
@@ -653,7 +930,7 @@ export function FloorView({
         <>
           <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-lg border border-line bg-surface px-3 py-1.5 text-[11px] font-medium shadow-card">
             <span className="mr-1.5 inline-block size-1.5 rounded-full bg-danger align-middle" />
-            Main floor
+            Sala principal
           </div>
 
           {arrangeable && (
@@ -662,7 +939,7 @@ export function FloorView({
               onClick={() => setArranging(true)}
               className="absolute bottom-4 right-4 z-10 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[11px] font-medium shadow-card hover:border-line-strong"
             >
-              Arrange tables
+              Organizar mesas
             </button>
           )}
         </>

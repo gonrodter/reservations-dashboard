@@ -45,14 +45,14 @@ function DateRow({
         </span>
         <span className="block truncate text-[11px] text-muted">
           {specialDate.closed
-            ? "Closed all day"
+            ? "Cerrado todo el día"
             : specialDate.startTime && specialDate.endTime
               ? periodLabel(
                   specialDate.startTime,
                   specialDate.endTime,
                   specialDate.spansNextDay
                 )
-              : "Custom hours"}
+              : "Horario personalizado"}
           {specialDate.note ? ` · ${specialDate.note}` : ""}
         </span>
       </span>
@@ -63,13 +63,13 @@ function DateRow({
         }`}
       >
         <span className="size-1 rounded-full bg-current" aria-hidden />
-        {specialDate.closed ? "Closed" : "Special hours"}
+        {specialDate.closed ? "Cerrado" : "Horario especial"}
       </span>
 
       <button
         type="button"
         onClick={onEdit}
-        aria-label={`Edit ${specialDate.date}`}
+        aria-label={`Editar ${specialDate.date}`}
         className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
       >
         <PencilIcon size={14} />
@@ -77,7 +77,7 @@ function DateRow({
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Remove ${specialDate.date}`}
+        aria-label={`Eliminar ${specialDate.date}`}
         className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
       >
         <TrashIcon size={14} />
@@ -128,29 +128,29 @@ export function SpecialDatesView({
       <TopBar
         title={restaurant.name}
         onNew={() => setDialog({})}
-        newLabel="Add special date"
+        newLabel="Añadir fecha especial"
       />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-3 py-4 md:px-6">
           <PageHeading
-            title="Special dates"
-            description="Holidays, closures and one-off hours. A special date always overrides that day's usual booking hours."
+            title="Fechas especiales"
+            description="Festivos, cierres y horarios puntuales. Una fecha especial siempre sustituye el horario habitual de ese día."
           />
 
           {specialDates.length === 0 ? (
             <div className="mt-10">
               <EmptyState
                 icon={<StarDateIcon size={18} />}
-                title="No special dates yet"
-                body="Add the days your usual hours do not apply, such as Christmas Day or a private event."
+                title="Todavía no hay fechas especiales"
+                body="Añade los días en los que no se aplique el horario habitual, como Navidad o un evento privado."
                 action={
                   <Button
                     variant="primary"
                     icon={<PlusIcon size={13} />}
                     onClick={() => setDialog({})}
                   >
-                    Add a special date
+                    Añadir una fecha especial
                   </Button>
                 }
               />
@@ -159,11 +159,11 @@ export function SpecialDatesView({
             <>
               <section className="mt-5">
                 <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
-                  Coming up
+                  Próximas
                 </h3>
                 {upcoming.length === 0 ? (
                   <p className="rounded-lg bg-sunken px-3 py-2.5 text-xs text-muted">
-                    No special dates ahead. Your weekly booking hours apply.
+                    No hay próximas fechas especiales. Se aplica el horario semanal.
                   </p>
                 ) : (
                   <Card className="overflow-hidden">
@@ -185,7 +185,7 @@ export function SpecialDatesView({
               {past.length > 0 && (
                 <section className="mt-5">
                   <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
-                    Past
+                    Anteriores
                   </h3>
                   <Card className="overflow-hidden">
                     {past.slice(0, 12).map((specialDate) => (
@@ -210,7 +210,7 @@ export function SpecialDatesView({
                   icon={<PlusIcon size={13} />}
                   onClick={() => setDialog({})}
                 >
-                  Add special date
+                  Añadir fecha especial
                 </Button>
               </div>
             </>
@@ -234,9 +234,9 @@ export function SpecialDatesView({
 
       {removing && (
         <ConfirmDialog
-          title="Remove this special date?"
-          body={`${formatDayLabel(removing.date)} will go back to your usual booking hours.`}
-          confirmLabel="Remove"
+          title="¿Eliminar esta fecha especial?"
+          body={`${formatDayLabel(removing.date)} volverá a usar el horario de reservas habitual.`}
+          confirmLabel="Eliminar"
           destructive
           pending={pending}
           error={error}

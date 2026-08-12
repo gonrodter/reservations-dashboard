@@ -25,19 +25,19 @@ export default async function DashboardLayout({
             <AlertIcon size={18} />
           </div>
           <h1 className="mt-3 text-sm font-semibold">
-            {admin ? "No restaurant of your own" : "No restaurant assigned"}
+            {admin ? "No tienes un restaurante propio" : "No hay ningún restaurante asignado"}
           </h1>
           <p className="mt-1 text-xs leading-5 text-muted">
             {admin
-              ? "Your account is not linked to a restaurant. Use the admin area to onboard and manage restaurants."
-              : "Your account is active but not linked to a restaurant yet. Ask your administrator to grant you access, then sign in again."}
+              ? "Tu cuenta no está vinculada a un restaurante. Usa el área de administración para incorporar y gestionar restaurantes."
+              : "Tu cuenta está activa, pero todavía no está vinculada a un restaurante. Pide acceso al administrador y vuelve a iniciar sesión."}
           </p>
           {admin && (
             <Link
               href="/admin"
               className="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-ink px-3 py-2 text-[13px] font-medium text-surface hover:opacity-85"
             >
-              Open admin area
+              Abrir administración
             </Link>
           )}
           <form action={logout} className="mt-2">
@@ -45,7 +45,7 @@ export default async function DashboardLayout({
               type="submit"
               className="w-full rounded-lg border border-line py-2 text-[13px] font-medium hover:bg-sunken"
             >
-              Sign out
+              Cerrar sesión
             </button>
           </form>
         </div>

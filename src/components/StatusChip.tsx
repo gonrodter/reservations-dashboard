@@ -1,12 +1,12 @@
 import type { BookingStatus } from "@/lib/types";
 
 const STYLES: Record<BookingStatus, { label: string; className: string }> = {
-  confirmed: { label: "Confirmed", className: "bg-ok-soft text-ok" },
-  pending: { label: "Pending", className: "bg-warn-soft text-warn" },
-  seated: { label: "Seated", className: "bg-info-soft text-info" },
-  completed: { label: "Completed", className: "bg-sunken text-muted" },
-  cancelled: { label: "Cancelled", className: "bg-danger-soft text-danger" },
-  no_show: { label: "No-show", className: "bg-danger-soft text-danger" },
+  confirmed: { label: "Confirmada", className: "bg-ok-soft text-ok" },
+  pending: { label: "Pendiente", className: "bg-warn-soft text-warn" },
+  seated: { label: "En mesa", className: "bg-info-soft text-info" },
+  completed: { label: "Completada", className: "bg-sunken text-muted" },
+  cancelled: { label: "Cancelada", className: "bg-danger-soft text-danger" },
+  no_show: { label: "No se presentó", className: "bg-danger-soft text-danger" },
   unknown: { label: "—", className: "bg-sunken text-muted" },
 };
 

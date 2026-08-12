@@ -25,12 +25,12 @@ export const WIZARD_STEPS: WizardStep[] = [
 ];
 
 export const STEP_LABELS: Record<WizardStep, string> = {
-  restaurant: "Restaurant",
-  settings: "Booking settings",
-  schedule: "Weekly schedule",
-  tables: "Tables",
-  combinations: "Combinations",
-  review: "Review & activate",
+  restaurant: "Restaurante",
+  settings: "Ajustes de reservas",
+  schedule: "Horario semanal",
+  tables: "Mesas",
+  combinations: "Combinaciones",
+  review: "Revisar y activar",
 };
 
 export function isWizardStep(value: unknown): value is WizardStep {

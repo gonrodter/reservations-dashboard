@@ -12,7 +12,7 @@ export function TopBar({
   title,
   search,
   onNew,
-  newLabel = "New reservation",
+  newLabel = "Nueva reserva",
   extra,
 }: {
   title: string;
@@ -60,7 +60,7 @@ export function TopBar({
           >
             <PlusIcon size={14} />
             <span className="hidden sm:inline">{newLabel}</span>
-            <span className="sm:hidden">New</span>
+            <span className="sm:hidden">Nueva</span>
           </button>
         )}
       </div>

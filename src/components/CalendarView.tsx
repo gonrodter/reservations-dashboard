@@ -364,7 +364,7 @@ export function CalendarView({
           <button
             type="button"
             onClick={() => go(addDays(date, -step))}
-            aria-label={mode === "day" ? "Previous day" : "Previous week"}
+            aria-label={mode === "day" ? "Día anterior" : "Semana anterior"}
             className="flex size-8 items-center justify-center rounded-lg border border-line text-muted hover:bg-sunken hover:text-ink"
           >
             <ChevronLeftIcon size={15} />
@@ -372,7 +372,7 @@ export function CalendarView({
           <button
             type="button"
             onClick={() => go(addDays(date, step))}
-            aria-label={mode === "day" ? "Next day" : "Next week"}
+            aria-label={mode === "day" ? "Día siguiente" : "Semana siguiente"}
             className="flex size-8 items-center justify-center rounded-lg border border-line text-muted hover:bg-sunken hover:text-ink"
           >
             <ChevronRightIcon size={15} />
@@ -382,25 +382,25 @@ export function CalendarView({
             onClick={() => go(today)}
             className="ml-1 rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium hover:bg-sunken"
           >
-            Today
+            Hoy
           </button>
         </div>
 
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{heading}</p>
           <p className="text-[11px] text-muted tabular-nums">
-            {total} {total === 1 ? "reservation" : "reservations"}
+            {total} {total === 1 ? "reserva" : "reservas"}
           </p>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
           {navigating && <Spinner size={14} className="text-muted" />}
           <Segmented
-            label="Calendar view"
+            label="Vista del calendario"
             value={mode}
             options={[
-              { value: "day", label: "Day" },
-              { value: "week", label: "Week" },
+              { value: "day", label: "Día" },
+              { value: "week", label: "Semana" },
             ]}
             onChange={setMode}
           />
@@ -411,8 +411,8 @@ export function CalendarView({
         {bookings.length === 0 ? (
           <EmptyState
             icon={<CalendarIcon size={18} />}
-            title={mode === "day" ? "Nothing booked this day" : "Nothing booked this week"}
-            body="Use New reservation to add a booking a guest made by phone."
+            title={mode === "day" ? "No hay reservas este día" : "No hay reservas esta semana"}
+            body="Usa Nueva reserva para añadir una reserva hecha por teléfono."
           />
         ) : (
           <>
@@ -446,7 +446,7 @@ export function CalendarView({
                           }`}
                         >
                           {mode === "day"
-                            ? "Service"
+                            ? "Servicio"
                             : `${WEEKDAYS_SHORT[weekdayOf(day)]} ${day.slice(8)}`}
                         </span>
                         <span className="text-[10px] tabular-nums text-muted">
@@ -479,7 +479,7 @@ export function CalendarView({
                             key={overflow.startMin}
                             type="button"
                             onClick={() => goToDay(day)}
-                            title={`${overflow.hidden} more at this time — open the day view`}
+                            title={`${overflow.hidden} más a esta hora — abrir la vista diaria`}
                             className="absolute right-1 z-10 rounded-md border border-line-strong bg-surface px-1 py-0.5 text-[10px] font-semibold text-ink-soft shadow-card hover:border-ink"
                             style={{
                               top:
@@ -508,7 +508,7 @@ export function CalendarView({
                           {formatShortDay(day)}
                           {day === today && (
                             <span className="ml-1.5 rounded bg-info-soft px-1 py-0.5 text-[10px] normal-case text-info">
-                              Today
+                              Hoy
                             </span>
                           )}
                         </h3>

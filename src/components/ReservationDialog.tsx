@@ -8,6 +8,7 @@ import {
   updateReservation,
 } from "@/lib/actions";
 import { AlertIcon, Spinner, XIcon } from "@/components/icons";
+import { useDismiss } from "@/components/ui";
 
 const inputClass =
   "w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] outline-none transition-colors placeholder:text-muted focus:border-ink";
@@ -89,13 +90,7 @@ export function ReservationDialog({
     };
   }, [key, date, partySize, validQuery, attempt]);
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  const { closing, requestClose } = useDismiss(onClose);
 
   const slotsLoading = validQuery && (!loaded || loaded.key !== key);
   const slotsError = !slotsLoading && loaded?.key === key ? loaded.error ?? null : null;
@@ -134,7 +129,7 @@ export function ReservationDialog({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!effectiveSlot) {
-      setSubmitError("Choose a time slot.");
+      setSubmitError("Elige una franja horaria.");
       return;
     }
     setSubmitting(true);
@@ -174,22 +169,24 @@ export function ReservationDialog({
     >
       <button
         type="button"
-        aria-label="Close"
-        onClick={onClose}
-        className="absolute inset-0 bg-ink/20"
+        aria-label="Cerrar"
+        onClick={requestClose}
+        className={`absolute inset-0 bg-ink/20 ${closing ? "overlay-out" : "overlay-in"}`}
       />
       <form
         onSubmit={handleSubmit}
-        className="relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl bg-surface shadow-float md:rounded-2xl"
+        className={`relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl bg-surface shadow-float md:rounded-2xl ${
+          closing ? "sheet-out" : "sheet-in"
+        }`}
       >
         <header className="flex items-center justify-between border-b border-line px-4 py-3">
           <h2 className="text-sm font-semibold">
-            {mode === "create" ? "New reservation" : "Modify reservation"}
+            {mode === "create" ? "Nueva reserva" : "Modificar reserva"}
           </h2>
           <button
             type="button"
-            onClick={onClose}
-            aria-label="Close"
+            onClick={requestClose}
+            aria-label="Cerrar"
             className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
           >
             <XIcon size={15} />
@@ -199,12 +196,12 @@ export function ReservationDialog({
         <div className="thin-scroll flex-1 space-y-4 overflow-y-auto px-4 py-4">
           {mode === "edit" && booking && (
             <p className="rounded-lg bg-sunken px-3 py-2 text-xs text-ink-soft">
-              {booking.name} · {booking.phone || "no phone"}
+              {booking.name} · {booking.phone || "sin teléfono"}
             </p>
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label={mode === "create" ? "Service date" : "Date"} required>
+            <Field label={mode === "create" ? "Fecha del servicio" : "Fecha"} required>
               <input
                 type="date"
                 required
@@ -214,11 +211,11 @@ export function ReservationDialog({
                 className={inputClass}
               />
             </Field>
-            <Field label="Party size" required>
+            <Field label="Comensales" required>
               <div className="flex items-center rounded-lg border border-line">
                 <button
                   type="button"
-                  aria-label="Fewer guests"
+                  aria-label="Menos comensales"
                   onClick={() => setPartySize((n) => Math.max(1, n - 1))}
                   className="px-2.5 py-1.5 text-sm text-muted hover:text-ink"
                 >
@@ -229,7 +226,7 @@ export function ReservationDialog({
                 </span>
                 <button
                   type="button"
-                  aria-label="More guests"
+                  aria-label="Más comensales"
                   onClick={() => setPartySize((n) => Math.min(50, n + 1))}
                   className="px-2.5 py-1.5 text-sm text-muted hover:text-ink"
                 >
@@ -241,15 +238,15 @@ export function ReservationDialog({
 
           <div>
             <p className="mb-1.5 text-xs font-medium text-ink-soft">
-              Available times <span className="text-danger">*</span>
+              Horas disponibles <span className="text-danger">*</span>
             </p>
             {!validQuery ? (
               <p className="rounded-lg bg-sunken px-3 py-2.5 text-xs text-muted">
-                Pick a date to see available times.
+                Elige una fecha para ver las horas disponibles.
               </p>
             ) : slotsLoading ? (
               <div className="flex items-center gap-2 rounded-lg bg-sunken px-3 py-2.5 text-xs text-muted">
-                <Spinner size={13} /> Checking availability…
+                <Spinner size={13} /> Comprobando disponibilidad…
               </div>
             ) : slotsError ? (
               <div className="flex items-start justify-between gap-2 rounded-lg bg-danger-soft px-3 py-2.5 text-xs text-danger">
@@ -261,13 +258,13 @@ export function ReservationDialog({
                   onClick={retrySlots}
                   className="font-medium underline underline-offset-2"
                 >
-                  Retry
+                  Reintentar
                 </button>
               </div>
             ) : shownSlots.length === 0 ? (
               <p className="rounded-lg bg-sunken px-3 py-2.5 text-xs text-muted">
-                No tables available for {partySize} on this date. Try another
-                date or party size.
+                No hay mesas disponibles para {partySize} comensales en esta
+                fecha. Prueba con otra fecha u otro tamaño de grupo.
               </p>
             ) : (
               <>
@@ -287,7 +284,7 @@ export function ReservationDialog({
                       <span className="block">{slot.time}</span>
                       {slot.nextDay && (
                         <span className="block text-[9px] font-normal opacity-75">
-                          next day
+                          día siguiente
                         </span>
                       )}
                     </button>
@@ -295,7 +292,8 @@ export function ReservationDialog({
                 </div>
                 {shownSlots.some((slot) => slot.nextDay) && (
                   <p className="mt-1.5 text-[11px] text-muted">
-                    “Next day” times occur after midnight but belong to this service.
+                    Las horas del “día siguiente” son posteriores a medianoche,
+                    pero pertenecen a este servicio.
                   </p>
                 )}
               </>
@@ -305,16 +303,16 @@ export function ReservationDialog({
           {mode === "create" && (
             <>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Field label="Guest name" required>
+                <Field label="Nombre del cliente" required>
                   <input
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Full name"
+                    placeholder="Nombre completo"
                     className={inputClass}
                   />
                 </Field>
-                <Field label="Phone" required>
+                <Field label="Teléfono" required>
                   <input
                     required
                     type="tel"
@@ -325,21 +323,21 @@ export function ReservationDialog({
                   />
                 </Field>
               </div>
-              <Field label="Email">
+              <Field label="Correo electrónico">
                 <input
                   type="email"
                   value={email ?? ""}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="guest@example.com"
+                  placeholder="cliente@ejemplo.com"
                   className={inputClass}
                 />
               </Field>
-              <Field label="Notes">
+              <Field label="Notas">
                 <textarea
                   value={notes ?? ""}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="Allergies, occasion, seating preference…"
+                  placeholder="Alergias, ocasión, preferencia de mesa…"
                   className={`${inputClass} resize-none`}
                 />
               </Field>
@@ -353,13 +351,13 @@ export function ReservationDialog({
           )}
         </div>
 
-        <footer className="flex gap-2 border-t border-line p-3">
+        <footer className="flex gap-2 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-3">
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="flex-1 rounded-lg border border-line py-2 text-[13px] font-medium hover:bg-sunken"
           >
-            Discard
+            Descartar
           </button>
           <button
             type="submit"
@@ -367,7 +365,7 @@ export function ReservationDialog({
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-ink py-2 text-[13px] font-medium text-surface transition-opacity hover:opacity-85 disabled:opacity-40"
           >
             {submitting && <Spinner size={13} />}
-            {mode === "create" ? "Create reservation" : "Save changes"}
+            {mode === "create" ? "Crear reserva" : "Guardar cambios"}
           </button>
         </footer>
       </form>

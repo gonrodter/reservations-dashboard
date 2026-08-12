@@ -3,7 +3,7 @@ import { requireSuperadmin } from "@/lib/admin-data";
 import { NewRestaurantForm } from "@/components/admin/NewRestaurantForm";
 
 export const metadata: Metadata = {
-  title: "New restaurant · Admin",
+  title: "Nuevo restaurante · Administración",
 };
 
 export default async function NewRestaurantPage() {

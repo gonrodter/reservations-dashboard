@@ -25,16 +25,16 @@ export interface NavItem {
 // Two groups: what is happening during service, then how the restaurant is
 // configured. The rail shows the split as a hairline divider.
 const OPERATIONS: NavItem[] = [
-  { href: "/", label: "Today", icon: TableIcon },
-  { href: "/reservations", label: "Reservations", icon: ListIcon },
-  { href: "/calendar", label: "Calendar", icon: CalendarIcon },
+  { href: "/", label: "Hoy", icon: TableIcon },
+  { href: "/reservations", label: "Reservas", icon: ListIcon },
+  { href: "/calendar", label: "Calendario", icon: CalendarIcon },
 ];
 
 const CONFIGURATION: NavItem[] = [
-  { href: "/tables", label: "Tables", icon: GridIcon },
-  { href: "/schedule", label: "Schedule", icon: WeekIcon },
-  { href: "/special-dates", label: "Special dates", icon: StarDateIcon },
-  { href: "/settings", label: "Settings", icon: SettingsIcon },
+  { href: "/tables", label: "Mesas", icon: GridIcon },
+  { href: "/schedule", label: "Horario", icon: WeekIcon },
+  { href: "/special-dates", label: "Fechas especiales", icon: StarDateIcon },
+  { href: "/settings", label: "Ajustes", icon: SettingsIcon },
 ];
 
 const RESTAURANT_GROUPS: NavItem[][] = [OPERATIONS, CONFIGURATION];
@@ -66,7 +66,7 @@ export function Shell({
       <div className="flex h-full flex-col overflow-hidden bg-surface shadow-frame md:flex-row md:rounded-2xl">
         {/* Desktop and tablet icon rail */}
         <nav
-          aria-label="Main"
+          aria-label="Navegación principal"
           className="hidden w-14 shrink-0 flex-col items-center border-r border-line py-3 md:flex"
         >
           <div className="flex size-8 items-center justify-center rounded-lg bg-ink text-surface">
@@ -104,8 +104,8 @@ export function Shell({
             {canAccessAdmin && (
               <Link
                 href="/admin"
-                title="Admin area"
-                aria-label="Open admin area"
+                title="Administración"
+                aria-label="Abrir administración"
                 className="flex size-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-sunken hover:text-ink"
               >
                 <LayersIcon size={17} />
@@ -114,7 +114,7 @@ export function Shell({
             <form action={logout}>
               <button
                 type="submit"
-                title="Sign out"
+                title="Cerrar sesión"
                 className="flex size-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-sunken hover:text-ink"
               >
                 <LogoutIcon size={17} />
@@ -137,13 +137,13 @@ export function Shell({
                 className="ml-auto inline-flex items-center gap-1 rounded-lg bg-sunken px-2 py-1.5 text-xs font-medium text-ink-soft"
               >
                 <LayersIcon size={14} />
-                Admin
+                Administración
               </Link>
             )}
             <form action={logout} className={canAccessAdmin ? "" : "ml-auto"}>
               <button
                 type="submit"
-                title="Sign out"
+                title="Cerrar sesión"
                 className="flex size-8 items-center justify-center rounded-lg text-muted"
               >
                 <LogoutIcon size={16} />
@@ -152,7 +152,7 @@ export function Shell({
           </div>
 
           <nav
-            aria-label="Sections"
+            aria-label="Secciones"
             className="thin-scroll flex gap-1 overflow-x-auto px-3 py-2"
           >
             {all.map(({ href, label, icon: Icon }) => (

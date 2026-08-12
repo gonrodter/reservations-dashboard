@@ -3,7 +3,7 @@ import { LogoMark } from "@/components/icons";
 import { SetPasswordForm } from "./set-password-form";
 
 export const metadata: Metadata = {
-  title: "Create password · Reservations",
+  title: "Crear contraseña · Reservas",
 };
 
 export default function SetPasswordPage() {
@@ -15,13 +15,13 @@ export default function SetPasswordPage() {
             <LogoMark size={19} />
           </div>
           <div>
-            <h1 className="text-sm font-semibold">Create your password</h1>
-            <p className="text-xs text-muted">Restaurant owner account</p>
+            <h1 className="text-sm font-semibold">Crea tu contraseña</h1>
+            <p className="text-xs text-muted">Cuenta del propietario</p>
           </div>
         </div>
 
         <p className="mt-5 text-xs leading-5 text-muted">
-          Choose the password you will use to access your restaurant dashboard.
+          Elige la contraseña que usarás para acceder al panel de tu restaurante.
         </p>
 
         <div className="mt-4">

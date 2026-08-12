@@ -53,19 +53,19 @@ export function TableDialog({
   }
 
   return (
-    <Modal title={table ? "Edit table" : "New table"} onClose={onClose}>
+    <Modal title={table ? "Editar mesa" : "Nueva mesa"} onClose={onClose}>
       <form id="table-form" onSubmit={handleSubmit} className="contents">
         <div className="thin-scroll flex-1 space-y-4 overflow-y-auto px-4 py-4">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Table name" required>
+            <Field label="Nombre de la mesa" required>
               <Input
                 required
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="e.g. 12 or Window 2"
+                placeholder="p. ej., 12 o Ventana 2"
               />
             </Field>
-            <Field label="Seats" required hint="How many guests fit comfortably.">
+            <Field label="Plazas" required hint="Cuántos comensales caben cómodamente.">
               <Input
                 required
                 type="number"
@@ -78,14 +78,14 @@ export function TableDialog({
           </div>
 
           <Field
-            label="Area"
-            hint="Optional. Group tables by where they are, such as Terrace or Main room."
+            label="Zona"
+            hint="Opcional. Agrupa las mesas por su ubicación, como Terraza o Sala principal."
           >
             <Input
               list="zone-options"
               value={zone}
               onChange={(event) => setZone(event.target.value)}
-              placeholder="e.g. Terrace"
+              placeholder="p. ej., Terraza"
             />
             <datalist id="zone-options">
               {zones.map((option) => (
@@ -98,11 +98,11 @@ export function TableDialog({
             <Toggle
               checked={active}
               onChange={setActive}
-              label={active ? "Available for bookings" : "Out of service"}
+              label={active ? "Disponible para reservas" : "Fuera de servicio"}
             />
             <p className="mt-1 text-[11px] leading-4 text-muted">
-              Tables out of service keep their past reservations but are not
-              offered for new ones.
+              Las mesas fuera de servicio conservan sus reservas anteriores,
+              pero no se ofrecen para reservas nuevas.
             </p>
           </div>
 
@@ -111,10 +111,10 @@ export function TableDialog({
 
         <footer className="flex gap-2 border-t border-line p-3">
           <Button type="button" onClick={onClose} className="flex-1 py-2">
-            Discard
+            Descartar
           </Button>
           <Button type="submit" variant="primary" pending={pending} className="flex-1 py-2">
-            {table ? "Save table" : "Add table"}
+            {table ? "Guardar mesa" : "Añadir mesa"}
           </Button>
         </footer>
       </form>

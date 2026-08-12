@@ -16,21 +16,21 @@ export default async function AdminOverviewPage() {
 
   return (
     <>
-      <TopBar title="Terron Studio admin" />
+      <TopBar title="Administración de Terron Studio" />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-3 py-4 md:px-6">
           <PageHeading
-            title={fullName ? `Welcome back, ${fullName}` : "Overview"}
-            description="Onboard restaurants into the reservation system and keep their configuration up to date."
+            title={fullName ? `Te damos la bienvenida de nuevo, ${fullName}` : "Resumen"}
+            description="Incorpora restaurantes al sistema de reservas y mantén su configuración al día."
           />
 
           <div className="mt-4">
             <SummaryStats
               stats={[
-                { label: "Restaurants", value: String(restaurants.length) },
-                { label: "Live", value: String(live.length) },
-                { label: "Setting up", value: String(settingUp.length) },
+                { label: "Restaurantes", value: String(restaurants.length) },
+                { label: "Activos", value: String(live.length) },
+                { label: "En configuración", value: String(settingUp.length) },
               ]}
             />
           </div>
@@ -44,10 +44,10 @@ export default async function AdminOverviewPage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[13px] font-semibold">
-                Onboard a new restaurant
+                Incorporar un restaurante nuevo
               </span>
               <span className="block text-xs text-muted">
-                Name, domain, booking rules, hours and tables — then activate.
+                Nombre, dominio, reglas de reserva, horarios y mesas; después, actívalo.
               </span>
             </span>
             <ChevronRightIcon size={15} />
@@ -56,7 +56,7 @@ export default async function AdminOverviewPage() {
           {settingUp.length > 0 && (
             <section className="mt-6">
               <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
-                Unfinished onboarding
+                Configuración sin terminar
               </h3>
               <Card className="overflow-hidden">
                 {settingUp.slice(0, 6).map((restaurant, index) => (
@@ -72,11 +72,11 @@ export default async function AdminOverviewPage() {
                         {restaurant.name}
                       </span>
                       <span className="block truncate text-[11px] text-muted">
-                        {restaurant.slug || "No domain"}
+                        {restaurant.slug || "Sin dominio"}
                       </span>
                     </span>
                     <span className="rounded-md bg-warn-soft px-1.5 py-0.5 text-[11px] font-medium text-warn">
-                      Continue
+                      Continuar
                     </span>
                     <ChevronRightIcon size={14} />
                   </Link>
@@ -88,18 +88,18 @@ export default async function AdminOverviewPage() {
           <section className="mt-6">
             <div className="mb-1 flex items-baseline justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-                Live restaurants
+                Restaurantes activos
               </h3>
               <Link
                 href="/admin/restaurants"
                 className="text-xs font-medium text-muted hover:text-ink"
               >
-                View all
+                Ver todos
               </Link>
             </div>
             {live.length === 0 ? (
               <p className="rounded-lg bg-sunken px-3 py-2.5 text-xs text-muted">
-                No restaurants are live yet.
+                Todavía no hay restaurantes activos.
               </p>
             ) : (
               <Card className="overflow-hidden">
@@ -120,7 +120,7 @@ export default async function AdminOverviewPage() {
                       </span>
                     </span>
                     <span className="rounded-md bg-ok-soft px-1.5 py-0.5 text-[11px] font-medium text-ok">
-                      Live
+                      Activo
                     </span>
                     <ChevronRightIcon size={14} />
                   </Link>

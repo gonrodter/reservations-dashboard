@@ -16,23 +16,23 @@ import { useLiveBookings } from "@/components/useLiveBookings";
 export type RangePreset = "today" | "upcoming" | "week" | "month" | "past" | "custom";
 
 const PRESETS: { value: RangePreset; label: string }[] = [
-  { value: "today", label: "Today" },
-  { value: "upcoming", label: "Upcoming" },
-  { value: "week", label: "This week" },
-  { value: "month", label: "This month" },
-  { value: "past", label: "Past" },
-  { value: "custom", label: "Custom" },
+  { value: "today", label: "Hoy" },
+  { value: "upcoming", label: "Próximas" },
+  { value: "week", label: "Esta semana" },
+  { value: "month", label: "Este mes" },
+  { value: "past", label: "Anteriores" },
+  { value: "custom", label: "Personalizado" },
 ];
 
 const STATUS_OPTIONS: { value: BookingStatus | "all" | "active"; label: string }[] = [
-  { value: "all", label: "All statuses" },
-  { value: "active", label: "Active only" },
-  { value: "confirmed", label: "Confirmed" },
-  { value: "pending", label: "Pending" },
-  { value: "seated", label: "Seated" },
-  { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "no_show", label: "No-show" },
+  { value: "all", label: "Todos los estados" },
+  { value: "active", label: "Solo activas" },
+  { value: "confirmed", label: "Confirmadas" },
+  { value: "pending", label: "Pendientes" },
+  { value: "seated", label: "En mesa" },
+  { value: "completed", label: "Completadas" },
+  { value: "cancelled", label: "Canceladas" },
+  { value: "no_show", label: "No se presentaron" },
 ];
 
 /** The date range lives in the URL so a filtered view can be shared or reloaded. */
@@ -116,7 +116,7 @@ export function ReservationsView({
             setQuery(value);
             setLimit(PAGE_SIZE);
           },
-          placeholder: "Search by guest name or phone",
+          placeholder: "Buscar por nombre o teléfono",
         }}
         onNew={() => openCreate(today >= from ? today : from)}
       />
@@ -124,10 +124,10 @@ export function ReservationsView({
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-4xl px-3 py-4 md:px-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold">Reservations</h2>
+            <h2 className="text-sm font-semibold">Reservas</h2>
             <p className="text-xs text-muted tabular-nums">
-              {filtered.length} {filtered.length === 1 ? "reservation" : "reservations"} ·{" "}
-              {covers} {covers === 1 ? "cover" : "covers"}
+              {filtered.length} {filtered.length === 1 ? "reserva" : "reservas"} ·{" "}
+              {covers} {covers === 1 ? "comensal" : "comensales"}
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export function ReservationsView({
           <div className="mt-3 space-y-2">
             <div className="thin-scroll -mx-3 flex gap-2 overflow-x-auto px-3 md:mx-0 md:px-0">
               <Segmented
-                label="Date range"
+                label="Intervalo de fechas"
                 value={preset}
                 options={PRESETS}
                 onChange={(value) => {
@@ -145,7 +145,7 @@ export function ReservationsView({
               />
               <div className="shrink-0">
                 <Select
-                  aria-label="Status"
+                  aria-label="Estado"
                   value={status}
                   onChange={(event) => {
                     setStatus(event.target.value as BookingStatus | "all" | "active");
@@ -169,7 +169,7 @@ export function ReservationsView({
 
             {preset === "custom" && (
               <div className="grid grid-cols-2 gap-2 sm:max-w-xs">
-                <Field label="From">
+                <Field label="Desde">
                   <Input
                     type="date"
                     value={from}
@@ -177,7 +177,7 @@ export function ReservationsView({
                     onChange={(event) => applyRange({ from: event.target.value })}
                   />
                 </Field>
-                <Field label="To">
+                <Field label="Hasta">
                   <Input
                     type="date"
                     value={to}
@@ -194,16 +194,16 @@ export function ReservationsView({
             <div className="mt-10">
               <EmptyState
                 icon={<ListIcon size={18} />}
-                title="No reservations in this period"
-                body="Pick another date range, or create a reservation for a guest who called."
+                title="No hay reservas en este periodo"
+                body="Elige otro intervalo de fechas o crea una reserva para un cliente que haya llamado."
               />
             </div>
           ) : filtered.length === 0 ? (
             <div className="mt-10">
               <EmptyState
                 icon={<SearchIcon size={18} />}
-                title="No matches"
-                body="No reservation matches these filters. Try clearing the search or status."
+                title="Sin resultados"
+                body="Ninguna reserva coincide con estos filtros. Prueba a borrar la búsqueda o el estado."
               />
             </div>
           ) : (
@@ -214,7 +214,7 @@ export function ReservationsView({
                     {formatDayLabel(date)}
                     {date === today && (
                       <span className="ml-1.5 rounded bg-info-soft px-1 py-0.5 text-[10px] text-info">
-                        Today
+                        Hoy
                       </span>
                     )}
                   </h3>
@@ -239,7 +239,7 @@ export function ReservationsView({
                     onClick={() => setLimit((value) => value + PAGE_SIZE)}
                     className="rounded-lg border border-line px-4 py-2 text-[13px] font-medium hover:bg-sunken"
                   >
-                    Show {Math.min(PAGE_SIZE, filtered.length - visible.length)} more
+                    Mostrar {Math.min(PAGE_SIZE, filtered.length - visible.length)} más
                   </button>
                 </div>
               )}
