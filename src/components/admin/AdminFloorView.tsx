@@ -27,6 +27,9 @@ import { useLiveBookings } from "@/components/useLiveBookings";
  * user's membership and a superadmin is not a member of the restaurants they
  * are looking at.
  */
+/** Phones show one pane at a time; both are side by side from large up. */
+type Pane = "map" | "list";
+
 export function AdminFloorView({
   restaurants,
   snapshot,
@@ -41,6 +44,7 @@ export function AdminFloorView({
   const [switching, startSwitch] = useTransition();
   const [selected, setSelected] = useState<Booking | null>(null);
   const [tableBookings, setTableBookings] = useState<Booking[]>([]);
+  const [pane, setPane] = useState<Pane>("map");
 
   const restaurant = snapshot?.restaurant;
 
@@ -97,6 +101,19 @@ export function AdminFloorView({
     <>
       <TopBar
         title="Administración de Terron Studio"
+        leading={
+          <div className="lg:hidden">
+            <Segmented
+              label="Vista"
+              value={pane}
+              options={[
+                { value: "map", label: "Plano" },
+                { value: "list", label: "Reservas" },
+              ]}
+              onChange={setPane}
+            />
+          </div>
+        }
         extra={
           <>
             {switching && <Spinner size={14} className="text-muted" />}
@@ -131,6 +148,7 @@ export function AdminFloorView({
           onSelect={select}
           stats={stats}
           nowMs={nowMs}
+          pane={pane}
         />
       )}
 
@@ -156,33 +174,20 @@ function FloorBody({
   onSelect,
   stats,
   nowMs,
+  pane,
 }: {
   snapshot: FloorSnapshot;
   selected: Booking | null;
   onSelect: (booking: Booking, tableBookings?: Booking[]) => void;
   stats: { label: string; value: string; tone?: "default" | "danger" }[];
   nowMs?: number;
+  /** Which of the two panes a phone shows; both are visible from large up. */
+  pane: Pane;
 }) {
   const { restaurant, tables, bookings, today } = snapshot;
   useLiveBookings(restaurant.id);
 
-  const [pane, setPane] = useState<"map" | "list">("map");
-
   return (
-    <>
-    {/* Pane switch, phones and tablets only */}
-    <div className="flex shrink-0 items-center justify-end border-b border-line px-3 py-2 lg:hidden">
-      <Segmented
-        label="Vista"
-        value={pane}
-        options={[
-          { value: "map", label: "Plano" },
-          { value: "list", label: "Reservas" },
-        ]}
-        onChange={setPane}
-      />
-    </div>
-
     <div className="flex min-h-0 flex-1">
       <aside
         className={`w-full min-w-0 flex-col border-line lg:flex lg:w-[360px] lg:shrink-0 lg:border-r xl:w-[380px] ${
@@ -244,6 +249,5 @@ function FloorBody({
         />
       </main>
     </div>
-    </>
   );
 }

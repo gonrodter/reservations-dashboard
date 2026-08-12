@@ -14,6 +14,7 @@ export function TopBar({
   onNew,
   newLabel = "Nueva reserva",
   extra,
+  leading,
 }: {
   title: string;
   search?: {
@@ -24,9 +25,12 @@ export function TopBar({
   onNew?: () => void;
   newLabel?: string;
   extra?: ReactNode;
+  /** Sits at the start of the row, on the same line as the title. */
+  leading?: ReactNode;
 }) {
   return (
     <div className="flex shrink-0 items-center gap-3 border-b border-line px-3 py-2.5 md:px-4">
+      {leading}
       <h1 className="hidden truncate text-sm font-semibold md:block md:w-48">
         {title}
       </h1>

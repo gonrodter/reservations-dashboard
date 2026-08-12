@@ -229,6 +229,15 @@ export function GridIcon(props: IconProps) {
   );
 }
 
+/** Fit-to-screen: four corner brackets framing the view. */
+export function FitIcon(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15" />
+    </svg>
+  );
+}
+
 export function TrashIcon(props: IconProps) {
   return (
     <svg {...base(props)}>

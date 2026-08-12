@@ -173,22 +173,35 @@ export function Segmented<T extends string>({
   onChange: (value: T) => void;
   label: string;
 }) {
+  const index = Math.max(
+    0,
+    options.findIndex((option) => option.value === value)
+  );
+
   return (
     <div
       role="group"
       aria-label={label}
-      className="inline-flex shrink-0 gap-0.5 rounded-lg bg-sunken p-0.5"
+      className="relative inline-flex shrink-0 rounded-lg bg-sunken p-0.5"
     >
+      {/* One thumb slides between the equal-width slots, so switching reads as
+          the same control moving rather than two states swapping. */}
+      <span
+        aria-hidden
+        className="absolute inset-y-0.5 left-0.5 rounded-md bg-surface shadow-card transition-transform duration-200 ease-out"
+        style={{
+          width: `calc((100% - 0.25rem) / ${options.length})`,
+          transform: `translateX(${index * 100}%)`,
+        }}
+      />
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
-          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-            value === option.value
-              ? "bg-surface text-ink shadow-card"
-              : "text-muted hover:text-ink"
+          className={`relative z-10 flex-1 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+            value === option.value ? "text-ink" : "text-muted hover:text-ink"
           }`}
         >
           {option.label}
@@ -234,6 +247,56 @@ export function useDismiss(onClose: () => void, open = true) {
   return { closing, requestClose };
 }
 
+/** Downward drag, in pixels, that dismisses a sheet on release. */
+const SWIPE_THRESHOLD = 96;
+
+/**
+ * Lets a bottom sheet be pushed down and closed with the usual phone gesture.
+ * The handlers go on the sheet's header, so scrolling its body is untouched,
+ * and the gesture is ignored from tablet up, where the overlay is not a sheet.
+ */
+export function useSwipeDismiss(onDismiss: () => void) {
+  const [offset, setOffset] = useState(0);
+  const [start, setStart] = useState<number | null>(null);
+
+  function onTouchStart(event: React.TouchEvent) {
+    if (window.innerWidth >= 768 || event.touches.length !== 1) return;
+    setStart(event.touches[0].clientY);
+  }
+
+  function onTouchMove(event: React.TouchEvent) {
+    if (start === null) return;
+    setOffset(Math.max(0, event.touches[0].clientY - start));
+  }
+
+  function onTouchEnd() {
+    if (start === null) return;
+    setStart(null);
+    if (offset > SWIPE_THRESHOLD) onDismiss();
+    else setOffset(0);
+  }
+
+  return {
+    offset,
+    dragging: start !== null,
+    handlers: {
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
+      onTouchCancel: onTouchEnd,
+    },
+  };
+}
+
+/** Inline styles that carry the swipe on the sheet itself. */
+export function swipeStyle(offset: number, dragging: boolean) {
+  if (!offset) return undefined;
+  return {
+    transform: `translateY(${offset}px)`,
+    transition: dragging ? "none" : "transform 200ms cubic-bezier(0.22, 1, 0.36, 1)",
+  };
+}
+
 /** Bottom sheet on phones, centred panel from tablet up. */
 export function Modal({
   title,
@@ -247,6 +310,7 @@ export function Modal({
   footer?: ReactNode;
 }) {
   const { closing, requestClose } = useDismiss(onClose);
+  const swipe = useSwipeDismiss(requestClose);
 
   return (
     <div
@@ -262,21 +326,28 @@ export function Modal({
         className={`absolute inset-0 bg-ink/20 ${closing ? "overlay-out" : "overlay-in"}`}
       />
       <div
+        style={swipeStyle(swipe.offset, swipe.dragging)}
         className={`relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl bg-surface shadow-float md:rounded-2xl ${
           closing ? "sheet-out" : "sheet-in"
         }`}
       >
-        <header className="flex items-center justify-between border-b border-line px-4 py-3">
-          <h2 className="text-sm font-semibold">{title}</h2>
-          <button
-            type="button"
-            onClick={requestClose}
-            aria-label="Cerrar"
-            className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
-          >
-            <XIcon size={15} />
-          </button>
-        </header>
+        <div {...swipe.handlers} className="shrink-0 touch-none">
+          <span
+            aria-hidden
+            className="mx-auto mt-2 block h-1 w-9 rounded-full bg-line-strong md:hidden"
+          />
+          <header className="flex items-center justify-between border-b border-line px-4 py-3">
+            <h2 className="text-sm font-semibold">{title}</h2>
+            <button
+              type="button"
+              onClick={requestClose}
+              aria-label="Cerrar"
+              className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
+            >
+              <XIcon size={15} />
+            </button>
+          </header>
+        </div>
         {children}
         {footer && (
           <footer className="flex gap-2 border-t border-line p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-3">

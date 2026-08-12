@@ -17,7 +17,7 @@ import {
   UsersIcon,
   XIcon,
 } from "@/components/icons";
-import { useDismiss } from "@/components/ui";
+import { swipeStyle, useDismiss, useSwipeDismiss } from "@/components/ui";
 
 function Row({
   icon,
@@ -70,6 +70,7 @@ export function DetailDrawer({
   } | null>(null);
 
   const { closing, requestClose } = useDismiss(onClose, Boolean(booking));
+  const swipe = useSwipeDismiss(requestClose);
 
   if (!booking) return null;
 
@@ -110,33 +111,36 @@ export function DetailDrawer({
       {/* Bottom sheet on phones — a full-height side panel does not fit under
           the mobile browser chrome — and a side panel from tablet up. */}
       <aside
+        style={swipeStyle(swipe.offset, swipe.dragging)}
         className={`absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-2xl bg-surface shadow-float md:max-h-none md:bottom-3 md:left-auto md:right-3 md:top-3 md:w-full md:max-w-sm md:rounded-2xl ${
           closing ? "drawer-out" : "drawer-in"
         }`}
       >
-        <span
-          aria-hidden
-          className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-line-strong md:hidden"
-        />
-        <header className="flex items-center gap-2 border-b border-line px-4 py-3">
-          <div key={booking.id} className={`min-w-0 flex-1 ${transitionClass}`}>
-            <p className="text-sm font-semibold">{booking.name}</p>
-            <p className="text-xs text-muted tabular-nums">
-              {booking.time} · {formatDayLabel(booking.date)}
-            </p>
-          </div>
-          <span key={`status-${booking.id}`} className={transitionClass}>
-            <StatusChip status={booking.status} />
-          </span>
-          <button
-            type="button"
-            onClick={requestClose}
-            aria-label="Cerrar"
-            className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
-          >
-            <XIcon size={15} />
-          </button>
-        </header>
+        <div {...swipe.handlers} className="shrink-0 touch-none">
+          <span
+            aria-hidden
+            className="mx-auto mt-2 block h-1 w-9 rounded-full bg-line-strong md:hidden"
+          />
+          <header className="flex items-center gap-2 border-b border-line px-4 py-3">
+            <div key={booking.id} className={`min-w-0 flex-1 ${transitionClass}`}>
+              <p className="text-sm font-semibold">{booking.name}</p>
+              <p className="text-xs text-muted tabular-nums">
+                {booking.time} · {formatDayLabel(booking.date)}
+              </p>
+            </div>
+            <span key={`status-${booking.id}`} className={transitionClass}>
+              <StatusChip status={booking.status} />
+            </span>
+            <button
+              type="button"
+              onClick={requestClose}
+              aria-label="Cerrar"
+              className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
+            >
+              <XIcon size={15} />
+            </button>
+          </header>
+        </div>
 
         {hasNavigation && (
           <nav

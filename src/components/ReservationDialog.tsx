@@ -8,7 +8,7 @@ import {
   updateReservation,
 } from "@/lib/actions";
 import { AlertIcon, Spinner, XIcon } from "@/components/icons";
-import { useDismiss } from "@/components/ui";
+import { swipeStyle, useDismiss, useSwipeDismiss } from "@/components/ui";
 
 const inputClass =
   "w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] outline-none transition-colors placeholder:text-muted focus:border-ink";
@@ -91,6 +91,7 @@ export function ReservationDialog({
   }, [key, date, partySize, validQuery, attempt]);
 
   const { closing, requestClose } = useDismiss(onClose);
+  const swipe = useSwipeDismiss(requestClose);
 
   const slotsLoading = validQuery && (!loaded || loaded.key !== key);
   const slotsError = !slotsLoading && loaded?.key === key ? loaded.error ?? null : null;
@@ -175,23 +176,30 @@ export function ReservationDialog({
       />
       <form
         onSubmit={handleSubmit}
+        style={swipeStyle(swipe.offset, swipe.dragging)}
         className={`relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-2xl bg-surface shadow-float md:rounded-2xl ${
           closing ? "sheet-out" : "sheet-in"
         }`}
       >
-        <header className="flex items-center justify-between border-b border-line px-4 py-3">
-          <h2 className="text-sm font-semibold">
-            {mode === "create" ? "Nueva reserva" : "Modificar reserva"}
-          </h2>
-          <button
-            type="button"
-            onClick={requestClose}
-            aria-label="Cerrar"
-            className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
-          >
-            <XIcon size={15} />
-          </button>
-        </header>
+        <div {...swipe.handlers} className="shrink-0 touch-none">
+          <span
+            aria-hidden
+            className="mx-auto mt-2 block h-1 w-9 rounded-full bg-line-strong md:hidden"
+          />
+          <header className="flex items-center justify-between border-b border-line px-4 py-3">
+            <h2 className="text-sm font-semibold">
+              {mode === "create" ? "Nueva reserva" : "Modificar reserva"}
+            </h2>
+            <button
+              type="button"
+              onClick={requestClose}
+              aria-label="Cerrar"
+              className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink"
+            >
+              <XIcon size={15} />
+            </button>
+          </header>
+        </div>
 
         <div className="thin-scroll flex-1 space-y-4 overflow-y-auto px-4 py-4">
           {mode === "edit" && booking && (

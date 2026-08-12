@@ -18,7 +18,7 @@ import {
   type GridPosition,
 } from "@/lib/floor-grid";
 import { EmptyState } from "@/components/EmptyState";
-import { Spinner, TableIcon } from "@/components/icons";
+import { FitIcon, Spinner, TableIcon } from "@/components/icons";
 
 /**
  * Last-resort sitting length, in minutes. Only used when a booking has neither
@@ -865,12 +865,12 @@ export function FloorView({
 
       {/* Zoom controls: the pinch gesture does the same, these keep the map
           usable with a mouse and for anyone who cannot pinch. */}
-      <div className="absolute right-3 top-3 z-10 flex flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-card">
+      <div className="absolute right-3 top-3 z-10 flex w-9 flex-col divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface shadow-card">
         <button
           type="button"
           onClick={() => stepZoom(1.25)}
           aria-label="Acercar"
-          className="flex size-8 items-center justify-center text-sm font-semibold text-ink-soft hover:bg-sunken disabled:opacity-30"
+          className="flex h-9 w-full items-center justify-center text-base leading-none text-ink-soft hover:bg-sunken disabled:opacity-30"
           disabled={zoom >= MAX_ZOOM}
         >
           +
@@ -879,7 +879,7 @@ export function FloorView({
           type="button"
           onClick={() => stepZoom(0.8)}
           aria-label="Alejar"
-          className="flex size-8 items-center justify-center border-t border-line text-sm font-semibold text-ink-soft hover:bg-sunken disabled:opacity-30"
+          className="flex h-9 w-full items-center justify-center text-base leading-none text-ink-soft hover:bg-sunken disabled:opacity-30"
           disabled={zoom <= MIN_ZOOM}
         >
           −
@@ -888,9 +888,10 @@ export function FloorView({
           type="button"
           onClick={resetView}
           aria-label="Ajustar el plano a la pantalla"
-          className="flex h-8 items-center justify-center border-t border-line px-1.5 text-[10px] font-medium text-muted hover:bg-sunken"
+          title="Ajustar el plano a la pantalla"
+          className="flex h-9 w-full items-center justify-center text-muted hover:bg-sunken"
         >
-          Ajustar
+          <FitIcon size={14} />
         </button>
       </div>
 
