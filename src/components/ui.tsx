@@ -182,7 +182,7 @@ export function Segmented<T extends string>({
     <div
       role="group"
       aria-label={label}
-      className="relative inline-flex shrink-0 rounded-lg bg-sunken p-0.5"
+      className="relative inline-grid shrink-0 auto-cols-fr grid-flow-col rounded-lg bg-sunken p-0.5"
     >
       {/* One thumb slides between the equal-width slots, so switching reads as
           the same control moving rather than two states swapping. */}
@@ -200,7 +200,7 @@ export function Segmented<T extends string>({
           type="button"
           aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
-          className={`relative z-10 flex-1 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+          className={`relative z-10 whitespace-nowrap rounded-md px-2.5 py-1 text-center text-xs font-medium transition-colors ${
             value === option.value ? "text-ink" : "text-muted hover:text-ink"
           }`}
         >
