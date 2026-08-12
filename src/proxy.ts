@@ -32,10 +32,11 @@ export default async function proxy(request: NextRequest) {
 
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
   const isPasswordSetupPage = request.nextUrl.pathname.startsWith("/set-password");
+  const isAuthCallback = request.nextUrl.pathname === "/auth/confirm";
 
   // Invite tokens arrive in the URL fragment, which browsers never send to the
   // server. Let this route render so the browser client can establish session.
-  if (!user && !isLoginPage && !isPasswordSetupPage) {
+  if (!user && !isLoginPage && !isPasswordSetupPage && !isAuthCallback) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

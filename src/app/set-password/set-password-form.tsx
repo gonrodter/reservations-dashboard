@@ -16,8 +16,12 @@ export function SetPasswordForm() {
   useEffect(() => {
     let active = true;
     const hash = new URLSearchParams(window.location.hash.slice(1));
+    const query = new URLSearchParams(window.location.search);
     const callbackError =
-      hash.get("error_description") ?? hash.get("error_code") ?? hash.get("error");
+      hash.get("error_description") ??
+      hash.get("error_code") ??
+      hash.get("error") ??
+      query.get("error");
     const accessToken = hash.get("access_token");
     const refreshToken = hash.get("refresh_token");
 

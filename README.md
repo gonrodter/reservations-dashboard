@@ -417,6 +417,16 @@ En Supabase → Authentication → URL Configuration, añade como Redirect URL
 si vas a probar invitaciones en desarrollo). Para producción configura SMTP
 propio: el servicio de correo de prueba de Supabase tiene límites muy bajos.
 
+En Authentication → Email Templates → Invite user, usa un enlace del propio
+dominio. La ruta `/auth/confirm` valida el token con Supabase y crea la sesión
+antes de enviar al propietario a `/set-password`:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite">
+  Crear mi contraseña
+</a>
+```
+
 ---
 
 ## 8. Columnas que asume el código
