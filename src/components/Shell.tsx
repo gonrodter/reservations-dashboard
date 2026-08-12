@@ -6,6 +6,7 @@ import { logout } from "@/lib/actions";
 import {
   CalendarIcon,
   GridIcon,
+  LayersIcon,
   ListIcon,
   LogoMark,
   LogoutIcon,
@@ -47,11 +48,14 @@ function isActive(pathname: string, href: string): boolean {
 export function Shell({
   restaurantName,
   groups = RESTAURANT_GROUPS,
+  canAccessAdmin = false,
   children,
 }: {
   restaurantName: string;
   /** Rail groups, rendered with a divider between them. */
   groups?: NavItem[][];
+  /** Shows a direct switch to the protected admin area for superadmins. */
+  canAccessAdmin?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -96,15 +100,27 @@ export function Shell({
             </div>
           ))}
 
-          <form action={logout} className="mt-auto">
-            <button
-              type="submit"
-              title="Sign out"
-              className="flex size-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-sunken hover:text-ink"
-            >
-              <LogoutIcon size={17} />
-            </button>
-          </form>
+          <div className="mt-auto flex flex-col gap-1.5">
+            {canAccessAdmin && (
+              <Link
+                href="/admin"
+                title="Admin area"
+                aria-label="Open admin area"
+                className="flex size-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-sunken hover:text-ink"
+              >
+                <LayersIcon size={17} />
+              </Link>
+            )}
+            <form action={logout}>
+              <button
+                type="submit"
+                title="Sign out"
+                className="flex size-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-sunken hover:text-ink"
+              >
+                <LogoutIcon size={17} />
+              </button>
+            </form>
+          </div>
         </nav>
 
         {/* Phone header: identity row, then a scrollable section row so all
@@ -115,7 +131,16 @@ export function Shell({
               <LogoMark size={15} />
             </div>
             <span className="truncate text-sm font-semibold">{restaurantName}</span>
-            <form action={logout} className="ml-auto">
+            {canAccessAdmin && (
+              <Link
+                href="/admin"
+                className="ml-auto inline-flex items-center gap-1 rounded-lg bg-sunken px-2 py-1.5 text-xs font-medium text-ink-soft"
+              >
+                <LayersIcon size={14} />
+                Admin
+              </Link>
+            )}
+            <form action={logout} className={canAccessAdmin ? "" : "ml-auto"}>
               <button
                 type="submit"
                 title="Sign out"

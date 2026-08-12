@@ -10,13 +10,14 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { restaurant } = await getSessionContext();
+  const [{ restaurant }, admin] = await Promise.all([
+    getSessionContext(),
+    isSuperadmin(),
+  ]);
 
   if (!restaurant) {
     // A superadmin normally has no restaurant of their own, so send them
     // somewhere useful instead of leaving them on a dead end.
-    const admin = await isSuperadmin();
-
     return (
       <main className="canvas-decor flex min-h-dvh items-center justify-center p-4">
         <div className="w-full max-w-sm rounded-2xl bg-surface p-6 text-center shadow-frame">
@@ -52,5 +53,9 @@ export default async function DashboardLayout({
     );
   }
 
-  return <Shell restaurantName={restaurant.name}>{children}</Shell>;
+  return (
+    <Shell restaurantName={restaurant.name} canAccessAdmin={admin}>
+      {children}
+    </Shell>
+  );
 }
