@@ -7,7 +7,7 @@ import { AlertIcon, Spinner, XIcon } from "@/components/icons";
 // rounded-lg borders on --color-line, ink-filled primary actions.
 
 export const inputClass =
-  "w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] outline-none transition-colors placeholder:text-muted focus:border-ink disabled:bg-sunken disabled:text-muted";
+  "w-full min-w-0 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] outline-none transition-colors placeholder:text-muted focus:border-ink disabled:bg-sunken disabled:text-muted";
 
 type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 
@@ -54,7 +54,9 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="block">
+    // min-w-0 so a field in a grid column can shrink below the intrinsic width
+    // of its control instead of spilling over the next column.
+    <label className="block min-w-0">
       <span className="mb-1 block text-xs font-medium text-ink-soft">
         {label}
         {required && <span className="text-danger"> *</span>}
@@ -167,11 +169,14 @@ export function Segmented<T extends string>({
   options,
   onChange,
   label,
+  fullWidth = false,
 }: {
   value: T;
   options: { value: T; label: string }[];
   onChange: (value: T) => void;
   label: string;
+  /** Fills its container, for a control that answers the field above it. */
+  fullWidth?: boolean;
 }) {
   const index = Math.max(
     0,
@@ -182,7 +187,9 @@ export function Segmented<T extends string>({
     <div
       role="group"
       aria-label={label}
-      className="relative inline-grid shrink-0 auto-cols-fr grid-flow-col rounded-lg bg-sunken p-0.5"
+      className={`relative auto-cols-fr grid-flow-col rounded-lg bg-sunken p-0.5 ${
+        fullWidth ? "grid w-full" : "inline-grid shrink-0"
+      }`}
     >
       {/* One thumb slides between the equal-width slots, so switching reads as
           the same control moving rather than two states swapping. */}

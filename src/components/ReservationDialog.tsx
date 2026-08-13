@@ -11,7 +11,7 @@ import { AlertIcon, Spinner, XIcon } from "@/components/icons";
 import { swipeStyle, useDismiss, useSwipeDismiss } from "@/components/ui";
 
 const inputClass =
-  "w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] outline-none transition-colors placeholder:text-muted focus:border-ink";
+  "w-full min-w-0 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[13px] outline-none transition-colors placeholder:text-muted focus:border-ink";
 
 function Field({
   label,
@@ -23,7 +23,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-1 block text-xs font-medium text-ink-soft">
         {label}
         {required && <span className="text-danger"> *</span>}

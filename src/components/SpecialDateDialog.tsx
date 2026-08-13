@@ -81,6 +81,7 @@ export function SpecialDateDialog({
               En esta fecha el restaurante está
             </p>
             <Segmented
+              fullWidth
               label="Qué ocurre en esta fecha"
               value={mode}
               options={[
