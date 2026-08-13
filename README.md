@@ -376,6 +376,9 @@ proyecto de Supabase.
   Son opcionales (`null` = sin colocar) y solo las usa el plano. Hasta que
   existan, el mapa se ve con la distribución por defecto y al guardar aparece:
   *"Saving the floor plan needs two extra columns on the tables…"*.
+- Para poder elegir el **color de cada mesa**, `restaurant_tables` necesita la
+  columna `colour text` incluida en `supabase/migrations/202608130001_add_table_colour.sql`.
+  Las mesas antiguas conservan su color automático hasta que se editen.
 - Recomendado: **índice único en `restaurants.slug`**. La app ya comprueba
   duplicados y da un mensaje legible, pero el índice evita una carrera entre dos
   altas simultáneas.
@@ -443,7 +446,7 @@ el único archivo que hay que tocar.
 |---|---|
 | `restaurants` | `name`, `slug`, `active` |
 | `restaurant_settings` | `restaurant_id`, `restaurant_name`, `timezone`, `slot_interval_minutes`, `default_booking_duration_minutes`, `max_online_party_size`, `min_advance_minutes`, `max_advance_days`, `strict_table_capacity` |
-| `restaurant_tables` | `restaurant_id`, `name`, `capacity`, `zone`, `active`, `grid_x`, `grid_y` |
+| `restaurant_tables` | `restaurant_id`, `name`, `capacity`, `zone`, `colour`, `active`, `grid_x`, `grid_y` |
 | `table_combinations` | `restaurant_id`, `name`, `capacity`, `active` |
 | `table_combination_members` | `combination_id`, `table_id` |
 | `booking_hours` | `restaurant_id`, `day_of_week`, `start_time`, `end_time`, `spans_next_day`, `active` |

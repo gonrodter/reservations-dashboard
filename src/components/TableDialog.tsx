@@ -5,6 +5,11 @@ import type { RestaurantTable } from "@/lib/types";
 import { saveTable, type TableInput } from "@/lib/config-actions";
 import type { ActionResult } from "@/lib/errors";
 import {
+  defaultTableColourId,
+  TABLE_COLOUR_OPTIONS,
+  type TableColourId,
+} from "@/lib/table-colours";
+import {
   Button,
   ErrorNote,
   Field,
@@ -30,6 +35,10 @@ export function TableDialog({
   const [name, setName] = useState(table?.name ?? "");
   const [capacity, setCapacity] = useState(String(table?.capacity ?? 4));
   const [zone, setZone] = useState(table?.zone ?? "");
+  const [colour, setColour] = useState<TableColourId>(() => {
+    const selected = TABLE_COLOUR_OPTIONS.find((option) => option.id === table?.colour)?.id;
+    return selected ?? (table ? defaultTableColourId(table.id) : "teal");
+  });
   const [active, setActive] = useState(table?.active ?? true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +53,7 @@ export function TableDialog({
       name,
       capacity: Number(capacity),
       zone,
+      colour,
       active,
     });
 
@@ -92,6 +102,35 @@ export function TableDialog({
                 <option key={option} value={option} />
               ))}
             </datalist>
+          </Field>
+
+          <Field label="Color" hint="Identifica la mesa en el plano, las reservas y el calendario.">
+            <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label="Color de la mesa">
+              {TABLE_COLOUR_OPTIONS.map((option) => {
+                const selected = colour === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    aria-label={option.label}
+                    title={option.label}
+                    onClick={() => setColour(option.id)}
+                    className={`flex h-10 items-center justify-center rounded-lg border transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info ${
+                      selected ? "border-ink ring-2 ring-ink/15" : "border-line hover:border-line-strong"
+                    }`}
+                    style={{ backgroundColor: option.fill }}
+                  >
+                    <span
+                      aria-hidden
+                      className={`size-4 rounded-full ${selected ? "ring-2 ring-surface ring-offset-1" : ""}`}
+                      style={{ backgroundColor: option.ink }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
           </Field>
 
           <div className="rounded-lg bg-sunken px-3 py-2.5">

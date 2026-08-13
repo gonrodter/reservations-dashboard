@@ -49,6 +49,8 @@ export interface RestaurantTable {
   name: string;
   capacity: number | null;
   zone: string | null;
+  /** Palette id selected by the restaurant; null keeps the legacy automatic colour. */
+  colour: string | null;
   active: boolean;
   /**
    * Where the table sits on the floor map, in grid positions. Null until
@@ -200,6 +202,7 @@ export function normalizeTable(row: Row): RestaurantTable {
       "Mesa",
     capacity: num(pick(row, ["capacity", "seats", "max_party_size"])),
     zone: str(pick(row, ["zone", "area", "section", "room"])),
+    colour: str(pick(row, ["colour", "color", "table_colour", "table_color"])),
     active: bool(pick(row, ["active", "is_active", "enabled"]), true),
     gridX: num(pick(row, ["grid_x", "pos_x", "layout_x"])),
     gridY: num(pick(row, ["grid_y", "pos_y", "layout_y"])),

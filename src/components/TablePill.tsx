@@ -8,10 +8,10 @@ export function TablePill({
   table,
   withCapacity = false,
 }: {
-  table: { id: string; name: string; capacity?: number | null };
+  table: { id: string; name: string; capacity?: number | null; colour?: string | null };
   withCapacity?: boolean;
 }) {
-  const colour = tableColour(table.id);
+  const colour = tableColour(table.id, table.colour);
 
   return (
     <span

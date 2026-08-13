@@ -158,7 +158,7 @@ export function CombinationDialog({
                               <span
                                 aria-hidden
                                 className="size-2 rounded-full"
-                                style={{ backgroundColor: tableColour(table.id).ink }}
+                                style={{ backgroundColor: tableColour(table.id, table.colour).ink }}
                               />
                             )}
                             {table.name}

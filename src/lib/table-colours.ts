@@ -18,18 +18,20 @@ export interface TableColour {
   ink: string;
 }
 
-const PALETTE: TableColour[] = [
-  { fill: "#e2f3f1", line: "#b9e0db", ink: "#0f7d74" }, // teal
-  { fill: "#eaf4e4", line: "#c8e3bd", ink: "#43852f" }, // green
-  { fill: "#f3f3de", line: "#dedeb4", ink: "#77770f" }, // olive
-  { fill: "#fbf1de", line: "#ecd7a8", ink: "#a4700d" }, // amber
-  { fill: "#fbeee5", line: "#f0d2ba", ink: "#b35a2b" }, // orange
-  { fill: "#fcecea", line: "#f3c9c5", ink: "#c0453c" }, // clay
-  { fill: "#fceaef", line: "#f3c4d3", ink: "#c03a63" }, // rose
-  { fill: "#f9e9f7", line: "#ecc4e8", ink: "#a5399f" }, // magenta
-  { fill: "#f0eafc", line: "#d8c8f5", ink: "#7a4bd0" }, // purple
-  { fill: "#f4efe9", line: "#ded0c1", ink: "#7b6350" }, // clay brown
-];
+export const TABLE_COLOUR_OPTIONS = [
+  { id: "teal", label: "Turquesa", fill: "#e2f3f1", line: "#b9e0db", ink: "#0f7d74" },
+  { id: "green", label: "Verde", fill: "#eaf4e4", line: "#c8e3bd", ink: "#43852f" },
+  { id: "olive", label: "Oliva", fill: "#f3f3de", line: "#dedeb4", ink: "#77770f" },
+  { id: "amber", label: "Amarillo", fill: "#fbf1de", line: "#ecd7a8", ink: "#a4700d" },
+  { id: "orange", label: "Naranja", fill: "#fbeee5", line: "#f0d2ba", ink: "#b35a2b" },
+  { id: "clay", label: "Coral", fill: "#fcecea", line: "#f3c9c5", ink: "#c0453c" },
+  { id: "rose", label: "Rosa", fill: "#fceaef", line: "#f3c4d3", ink: "#c03a63" },
+  { id: "magenta", label: "Magenta", fill: "#f9e9f7", line: "#ecc4e8", ink: "#a5399f" },
+  { id: "purple", label: "Morado", fill: "#f0eafc", line: "#d8c8f5", ink: "#7a4bd0" },
+  { id: "brown", label: "Marrón", fill: "#f4efe9", line: "#ded0c1", ink: "#7b6350" },
+] as const;
+
+export type TableColourId = (typeof TABLE_COLOUR_OPTIONS)[number]["id"];
 
 /** Neutral stand-in for a reservation with no table assigned yet. */
 export const UNASSIGNED_COLOUR: TableColour = {
@@ -39,19 +41,28 @@ export const UNASSIGNED_COLOUR: TableColour = {
 };
 
 /**
- * Same table, same colour, for as long as the table exists: the hue comes from
- * the table's id rather than its position in a list, so adding or retiring a
- * table never repaints the room.
+ * Stable automatic colour for legacy tables that do not have an explicit
+ * selection yet. The hue comes from the id rather than the table's list order.
  */
-export function tableColour(tableId: string): TableColour {
+export function defaultTableColourId(tableId: string): TableColourId {
   let hash = 0;
   for (let i = 0; i < tableId.length; i++) {
     hash = (hash * 31 + tableId.charCodeAt(i)) >>> 0;
   }
-  return PALETTE[hash % PALETTE.length];
+  return TABLE_COLOUR_OPTIONS[hash % TABLE_COLOUR_OPTIONS.length].id;
+}
+
+export function tableColour(tableId: string, selected?: string | null): TableColour {
+  const id = selected ?? defaultTableColourId(tableId);
+  return (
+    TABLE_COLOUR_OPTIONS.find((option) => option.id === id) ??
+    TABLE_COLOUR_OPTIONS.find((option) => option.id === defaultTableColourId(tableId))!
+  );
 }
 
 /** Colour a reservation is filed under: the first table it holds. */
-export function bookingColour(tables: { id: string }[]): TableColour | null {
-  return tables.length > 0 ? tableColour(tables[0].id) : null;
+export function bookingColour(
+  tables: { id: string; colour?: string | null }[]
+): TableColour | null {
+  return tables.length > 0 ? tableColour(tables[0].id, tables[0].colour) : null;
 }

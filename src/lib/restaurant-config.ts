@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/errors";
 import { impliesNextDay } from "@/lib/dates";
+import { TABLE_COLOUR_OPTIONS, type TableColourId } from "@/lib/table-colours";
 
 /**
  * Validated configuration writes for one restaurant, identified by id.
@@ -54,6 +55,7 @@ export interface TableInput {
   name: string;
   capacity: number;
   zone: string;
+  colour: TableColourId;
   active: boolean;
 }
 
@@ -71,10 +73,14 @@ export async function writeTable(
     return { ok: false, error: "Las plazas deben ser un número entero entre 1 y 50." };
   }
 
+  const colour = TABLE_COLOUR_OPTIONS.find((option) => option.id === input.colour)?.id;
+  if (!colour) return { ok: false, error: "Elige un color válido para la mesa." };
+
   const values = {
     name,
     capacity: capacity.value,
     zone: input.zone.trim() || null,
+    colour,
     active: input.active,
   };
 
