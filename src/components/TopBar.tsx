@@ -5,8 +5,9 @@ import { PlusIcon, SearchIcon } from "@/components/icons";
 
 /**
  * The row that sits above every page's content: restaurant identity on the
- * left, optional search in the middle, primary action on the right. Config
- * pages pass no search and get the same proportions.
+ * left, optional search in the middle, primary action on the right. Without a
+ * search the row would leave the action hanging alone, so it drops to a
+ * floating pill at the bottom of the page instead.
  */
 export function TopBar({
   title,
@@ -28,7 +29,10 @@ export function TopBar({
   /** Sits at the start of the row, on the same line as the title. */
   leading?: ReactNode;
 }) {
+  const floating = Boolean(onNew) && !search;
+
   return (
+    <>
     <div className="flex shrink-0 items-center gap-3 border-b border-line px-3 py-2.5 md:px-4">
       {leading}
       <h1 className="hidden truncate text-sm font-semibold md:block md:w-48">
@@ -56,11 +60,11 @@ export function TopBar({
 
       <div className="flex shrink-0 items-center gap-2 md:w-48 md:justify-end">
         {extra}
-        {onNew && (
+        {onNew && !floating && (
           <button
             type="button"
             onClick={() => onNew()}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[13px] font-medium text-surface transition-all hover:opacity-85 active:scale-[0.97]"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-ok px-3 py-1.5 text-[13px] font-medium text-white transition-all hover:opacity-85 active:scale-[0.97]"
           >
             <PlusIcon size={14} />
             <span className="hidden sm:inline">{newLabel}</span>
@@ -69,5 +73,17 @@ export function TopBar({
         )}
       </div>
     </div>
+
+    {onNew && floating && (
+      <button
+        type="button"
+        onClick={() => onNew()}
+        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-lg bg-ok px-4 py-2.5 text-[13px] font-medium text-white shadow-float transition-all hover:opacity-90 active:scale-[0.97]"
+      >
+        <PlusIcon size={15} />
+        {newLabel}
+      </button>
+    )}
+    </>
   );
 }

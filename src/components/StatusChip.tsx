@@ -10,6 +10,11 @@ const STYLES: Record<BookingStatus, { label: string; className: string }> = {
   unknown: { label: "—", className: "bg-sunken text-muted" },
 };
 
+/** The same wording, for places that print the status as plain text. */
+export function statusLabel(status: BookingStatus): string {
+  return (STYLES[status] ?? STYLES.unknown).label;
+}
+
 export function StatusChip({ status }: { status: BookingStatus }) {
   const style = STYLES[status] ?? STYLES.unknown;
   return (

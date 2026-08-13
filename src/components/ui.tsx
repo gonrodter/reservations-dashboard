@@ -11,10 +11,13 @@ export const inputClass =
 
 type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 
+// Only two actions earn a colour, and both are solid: green confirms or
+// creates, red removes. Everything else stays on the plain surface, so the
+// coloured ones keep their meaning.
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-ink text-surface hover:opacity-85",
+  primary: "bg-ok text-white hover:opacity-85",
   secondary: "border border-line bg-surface hover:bg-sunken",
-  danger: "border border-danger/30 bg-danger-soft text-danger hover:border-danger/60",
+  danger: "bg-danger text-white hover:opacity-85",
   ghost: "text-muted hover:bg-sunken hover:text-ink",
 };
 
@@ -151,6 +154,45 @@ export function PageHeading({
         )}
       </div>
       {action}
+    </div>
+  );
+}
+
+function LoadingPill({ label }: { label: string }) {
+  return (
+    <span className="flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-xs font-medium text-muted shadow-float">
+      <Spinner size={14} />
+      {label}
+    </span>
+  );
+}
+
+/**
+ * Covers the content region while a navigation is in flight, so the wait is
+ * shown where the new content will appear rather than on the control that
+ * started it.
+ */
+export function LoadingOverlay({ label = "Cargando" }: { label?: string }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="absolute inset-0 z-30 flex items-center justify-center bg-surface/60 backdrop-blur-[1px]"
+    >
+      <LoadingPill label={label} />
+    </div>
+  );
+}
+
+/** The same wait, for a route that has no content on screen yet. */
+export function PageLoading({ label = "Cargando" }: { label?: string }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex min-h-0 flex-1 items-center justify-center"
+    >
+      <LoadingPill label={label} />
     </div>
   );
 }
@@ -428,10 +470,10 @@ export function ConfirmDialog({
           </Button>
           <Button
             type="button"
-            variant={destructive ? "primary" : "primary"}
+            variant={destructive ? "danger" : "primary"}
             onClick={onConfirm}
             pending={pending}
-            className={`flex-1 py-2 ${destructive ? "bg-danger" : ""}`}
+            className="flex-1 py-2"
           >
             {confirmLabel}
           </Button>

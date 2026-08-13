@@ -152,7 +152,7 @@ export function ScheduleEditor({
                           setRemoving(period);
                         }}
                         aria-label="Eliminar horario"
-                        className="flex size-7 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
+                        className="flex size-7 items-center justify-center rounded-lg text-danger hover:bg-danger-soft"
                       >
                         <TrashIcon size={13} />
                       </button>

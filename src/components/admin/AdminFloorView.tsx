@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { AdminRestaurant, FloorSnapshot } from "@/lib/admin-data";
@@ -9,12 +9,12 @@ import { isCancelled } from "@/lib/types";
 import { formatDayLabel } from "@/lib/dates";
 import { TopBar } from "@/components/TopBar";
 import { SummaryStats } from "@/components/SummaryStats";
-import { ReservationCard } from "@/components/ReservationCard";
+import { ReservationColumns, ReservationLine } from "@/components/ReservationLine";
 import { FloorView } from "@/components/FloorView";
 import { DetailDrawer } from "@/components/DetailDrawer";
 import { EmptyState } from "@/components/EmptyState";
-import { Segmented, Select } from "@/components/ui";
-import { CalendarIcon, ChevronRightIcon, Spinner, TableIcon } from "@/components/icons";
+import { Card, LoadingOverlay, Segmented, Select } from "@/components/ui";
+import { CalendarIcon, ChevronRightIcon, TableIcon } from "@/components/icons";
 import { useLiveBookings } from "@/components/useLiveBookings";
 
 /**
@@ -47,6 +47,9 @@ export function AdminFloorView({
   const [pane, setPane] = useState<Pane>("map");
 
   const restaurant = snapshot?.restaurant;
+  // The picker answers the choice straight away; the floor below it only
+  // changes once the other restaurant's snapshot has arrived.
+  const [pickedId, setPickedId] = useOptimistic(restaurant?.id ?? "");
 
   const stats = useMemo(() => {
     const bookings = snapshot?.bookings ?? [];
@@ -74,7 +77,10 @@ export function AdminFloorView({
   function pick(id: string) {
     setSelected(null);
     setTableBookings([]);
-    startSwitch(() => router.replace(`/admin/floors?restaurant=${id}`, { scroll: false }));
+    startSwitch(() => {
+      setPickedId(id);
+      router.replace(`/admin/floors?restaurant=${id}`, { scroll: false });
+    });
   }
 
   function select(booking: Booking, bookings: Booking[] = []) {
@@ -116,10 +122,9 @@ export function AdminFloorView({
         }
         extra={
           <>
-            {switching && <Spinner size={14} className="text-muted" />}
             <Select
               aria-label="Restaurante"
-              value={restaurant?.id ?? ""}
+              value={pickedId}
               onChange={(event) => pick(event.target.value)}
               className="w-auto max-w-44 py-1"
             >
@@ -133,24 +138,27 @@ export function AdminFloorView({
         }
       />
 
-      {!snapshot ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center">
-          <EmptyState
-            icon={<TableIcon size={18} />}
-            title="Restaurante no encontrado"
-            body="Elige otro restaurante de la lista superior."
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        {!snapshot ? (
+          <div className="flex min-h-0 flex-1 items-center justify-center">
+            <EmptyState
+              icon={<TableIcon size={18} />}
+              title="Restaurante no encontrado"
+              body="Elige otro restaurante de la lista superior."
+            />
+          </div>
+        ) : (
+          <FloorBody
+            snapshot={snapshot}
+            selected={selected}
+            onSelect={select}
+            stats={stats}
+            nowMs={nowMs}
+            pane={pane}
           />
-        </div>
-      ) : (
-        <FloorBody
-          snapshot={snapshot}
-          selected={selected}
-          onSelect={select}
-          stats={stats}
-          nowMs={nowMs}
-          pane={pane}
-        />
-      )}
+        )}
+        {switching && <LoadingOverlay />}
+      </div>
 
       <DetailDrawer
         booking={selected}
@@ -187,6 +195,10 @@ function FloorBody({
   const { restaurant, tables, bookings, today } = snapshot;
   useLiveBookings(restaurant.id);
 
+  // Same as the restaurant's own Today: cancelled reservations are not part of
+  // the service, so the list leaves them out.
+  const live = bookings.filter((booking) => !isCancelled(booking));
+
   return (
     <div className="flex min-h-0 flex-1">
       <aside
@@ -215,22 +227,26 @@ function FloorBody({
           </div>
         </div>
 
-        <div className="thin-scroll flex-1 space-y-2 overflow-y-auto px-3 pb-4 md:px-4">
-          {bookings.length === 0 ? (
+        <div className="thin-scroll flex-1 overflow-y-auto px-3 pb-4 md:px-4">
+          {live.length === 0 ? (
             <EmptyState
               icon={<CalendarIcon size={18} />}
               title="No hay reservas para hoy"
               body="Este restaurante no tiene reservas para hoy."
             />
           ) : (
-            bookings.map((booking) => (
-              <ReservationCard
-                key={booking.id}
-                booking={booking}
-                selected={selected?.id === booking.id}
-                onSelect={(nextBooking) => onSelect(nextBooking)}
-              />
-            ))
+            <Card className="overflow-hidden">
+              <ReservationColumns />
+              {live.map((booking, index) => (
+                <ReservationLine
+                  key={booking.id}
+                  booking={booking}
+                  selected={selected?.id === booking.id}
+                  first={index === 0}
+                  onSelect={(nextBooking) => onSelect(nextBooking)}
+                />
+              ))}
+            </Card>
           )}
         </div>
       </aside>

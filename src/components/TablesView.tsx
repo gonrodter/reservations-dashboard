@@ -56,7 +56,7 @@ export function TablesView({
       />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl px-3 py-4 md:px-6">
+        <div className="mx-auto max-w-3xl px-3 pt-4 pb-24 md:px-6">
           <PageHeading
             title="Mesas"
             description={`${inService.length} en servicio · ${seats} plazas · ${combinations.filter((c) => c.active).length} combinaciones`}

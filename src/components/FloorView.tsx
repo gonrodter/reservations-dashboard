@@ -733,7 +733,7 @@ export function FloorView({
 
             {states.map(({ table, seated, upcoming }) => {
               const size = blockSize(table.capacity);
-              const colour = tableColour(table.id);
+              const colour = tableColour(table.id, table.colour);
               const booking = seated ?? upcoming[0] ?? null;
               const tableBookings = seated ? [seated, ...upcoming] : upcoming;
               const selected = tableBookings.some(
@@ -915,7 +915,7 @@ export function FloorView({
               type="button"
               onClick={cancel}
               disabled={saving}
-              className="rounded-lg border border-line px-2.5 py-1 text-[11px] font-medium hover:bg-sunken disabled:opacity-40"
+              className="rounded-lg border border-line bg-surface px-2.5 py-1 text-[11px] font-medium hover:bg-sunken disabled:opacity-40"
             >
               Descartar
             </button>
@@ -923,7 +923,7 @@ export function FloorView({
               type="button"
               onClick={save}
               disabled={saving || !dirty}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-2.5 py-1 text-[11px] font-medium text-surface hover:opacity-85 disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-ok px-2.5 py-1 text-[11px] font-medium text-white hover:opacity-85 disabled:opacity-40"
             >
               {saving && <Spinner size={11} />}
               Guardar plano

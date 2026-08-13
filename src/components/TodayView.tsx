@@ -5,14 +5,13 @@ import type { Booking, Restaurant, RestaurantTable } from "@/lib/types";
 import { isCancelled } from "@/lib/types";
 import { formatDayLabel } from "@/lib/dates";
 import { TopBar } from "@/components/TopBar";
-import { SummaryStats } from "@/components/SummaryStats";
-import { ReservationCard } from "@/components/ReservationCard";
+import { ReservationColumns, ReservationLine } from "@/components/ReservationLine";
 import { FloorView } from "@/components/FloorView";
 import { EmptyState } from "@/components/EmptyState";
 import { CalendarIcon, PlusIcon, SearchIcon } from "@/components/icons";
 import { useReservationOverlays } from "@/components/useReservationOverlays";
 import { useLiveBookings } from "@/components/useLiveBookings";
-import { Segmented } from "@/components/ui";
+import { Card, Segmented } from "@/components/ui";
 
 /** Phones show one pane at a time; both are side by side from large up. */
 type MobilePane = "map" | "list";
@@ -22,7 +21,6 @@ export function TodayView({
   today,
   bookings,
   tables,
-  upcomingCount,
   defaultDurationMinutes,
   nowMs,
 }: {
@@ -30,7 +28,6 @@ export function TodayView({
   today: string;
   bookings: Booking[];
   tables: RestaurantTable[];
-  upcomingCount: number;
   /** Fallback sitting length for bookings with no ends_at. */
   defaultDurationMinutes?: number;
   /** The server's clock, so the first paint matches on both sides. */
@@ -42,37 +39,22 @@ export function TodayView({
     useReservationOverlays(today);
   useLiveBookings(restaurant.id);
 
+  // A cancelled reservation is not part of the service: the panel lists only
+  // the ones that are still coming. The floor plan filters them out too.
+  const live = useMemo(
+    () => bookings.filter((booking) => !isCancelled(booking)),
+    [bookings]
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return bookings;
-    return bookings.filter(
+    if (!q) return live;
+    return live.filter(
       (booking) =>
         booking.name.toLowerCase().includes(q) ||
         booking.phone.toLowerCase().includes(q)
     );
-  }, [bookings, query]);
-
-  const stats = useMemo(() => {
-    const live = bookings.filter((booking) => !isCancelled(booking));
-    const now = nowMs;
-    const next = live.find(
-      (booking) => booking.startsAt && Date.parse(booking.startsAt) >= now
-    );
-    const cancelledCount = bookings.length - live.length;
-
-    // Labels stay short: the strip sits in a 360px panel beside the floor.
-    return [
-      { label: "Reservas", value: String(live.length) },
-      {
-        label: "Comensales",
-        value: String(live.reduce((sum, booking) => sum + (booking.partySize || 0), 0)),
-      },
-      { label: "Próxima", value: next?.time ?? "—" },
-      cancelledCount > 0
-        ? { label: "Canceladas", value: String(cancelledCount), tone: "danger" as const }
-        : { label: "Próximas", value: String(upcomingCount) },
-    ];
-  }, [bookings, upcomingCount, nowMs]);
+  }, [live, query]);
 
   return (
     <>
@@ -117,13 +99,10 @@ export function TodayView({
                 {filtered.length}
               </span>
             </div>
-            <div className="mt-3">
-              <SummaryStats stats={stats} />
-            </div>
           </div>
 
-          <div className="thin-scroll flex-1 space-y-2 overflow-y-auto px-3 pb-4 md:px-4">
-            {bookings.length === 0 ? (
+          <div className="thin-scroll flex-1 overflow-y-auto px-3 pb-4 md:px-4">
+            {live.length === 0 ? (
               <EmptyState
                 icon={<CalendarIcon size={18} />}
                 title="No hay reservas para hoy"
@@ -132,7 +111,7 @@ export function TodayView({
                   <button
                     type="button"
                     onClick={() => openCreate(today)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-surface hover:opacity-85"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-ok px-3 py-1.5 text-xs font-medium text-white hover:opacity-85"
                   >
                     <PlusIcon size={13} /> Nueva reserva
                   </button>
@@ -145,14 +124,18 @@ export function TodayView({
                 body={`Ninguna reserva coincide con “${query.trim()}”.`}
               />
             ) : (
-              filtered.map((booking) => (
-                <ReservationCard
-                  key={booking.id}
-                  booking={booking}
-                  selected={selected?.id === booking.id}
-                  onSelect={select}
-                />
-              ))
+              <Card className="overflow-hidden">
+                <ReservationColumns />
+                {filtered.map((booking, index) => (
+                  <ReservationLine
+                    key={booking.id}
+                    booking={booking}
+                    selected={selected?.id === booking.id}
+                    first={index === 0}
+                    onSelect={select}
+                  />
+                ))}
+              </Card>
             )}
           </div>
         </aside>

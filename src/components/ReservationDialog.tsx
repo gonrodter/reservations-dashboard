@@ -363,14 +363,14 @@ export function ReservationDialog({
           <button
             type="button"
             onClick={requestClose}
-            className="flex-1 rounded-lg border border-line py-2 text-[13px] font-medium hover:bg-sunken"
+            className="flex-1 rounded-lg border border-line bg-surface py-2 text-[13px] font-medium hover:bg-sunken"
           >
             Descartar
           </button>
           <button
             type="submit"
             disabled={submitting || !effectiveSlot}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-ink py-2 text-[13px] font-medium text-surface transition-opacity hover:opacity-85 disabled:opacity-40"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-ok py-2 text-[13px] font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-40"
           >
             {submitting && <Spinner size={13} />}
             {mode === "create" ? "Crear reserva" : "Guardar cambios"}

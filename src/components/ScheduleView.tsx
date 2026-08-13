@@ -33,7 +33,7 @@ export function ScheduleView({
       />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl px-3 py-4 md:px-6">
+        <div className="mx-auto max-w-3xl px-3 pt-4 pb-24 md:px-6">
           <PageHeading
             title="Horario de reservas"
             description="Cuándo pueden reservar mesa los clientes cada día de la semana. Los días sin horario no aceptan reservas."

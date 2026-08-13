@@ -1,8 +1,10 @@
 "use client";
 
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/lib/actions";
+import { LoadingOverlay } from "@/components/ui";
 import {
   CalendarIcon,
   GridIcon,
@@ -11,26 +13,40 @@ import {
   LogoMark,
   LogoutIcon,
   SettingsIcon,
-  Spinner,
   StarDateIcon,
   TableIcon,
   WeekIcon,
 } from "@/components/icons";
 
+/** How a nav link tells the shell that its navigation is in flight. */
+const ReportNavigation = createContext<(href: string, pending: boolean) => void>(
+  () => {}
+);
+
 /**
  * A tapped destination has to answer immediately, even though its data is
- * fetched on the server: the icon becomes a spinner for as long as the
- * navigation is in flight. Only meaningful inside a `Link`.
+ * fetched on the server. The icon itself stays put: the wait is reported to
+ * the shell, which shows it over the content that is about to change. Only
+ * meaningful inside a `Link`.
  */
 function NavIcon({
   icon: Icon,
   size,
+  href,
 }: {
   icon: (props: { size?: number }) => React.ReactElement;
   size: number;
+  href: string;
 }) {
   const { pending } = useLinkStatus();
-  return pending ? <Spinner size={size} /> : <Icon size={size} />;
+  const report = useContext(ReportNavigation);
+
+  useEffect(() => {
+    report(href, pending);
+    return () => report(href, false);
+  }, [href, pending, report]);
+
+  return <Icon size={size} />;
 }
 
 export interface NavItem {
@@ -78,7 +94,23 @@ export function Shell({
   const pathname = usePathname();
   const all = groups.flat();
 
+  const [pendingHrefs, setPendingHrefs] = useState<string[]>([]);
+  const report = useCallback((href: string, pending: boolean) => {
+    setPendingHrefs((current) => {
+      const listed = current.includes(href);
+      if (pending === listed) return current;
+      return pending ? [...current, href] : current.filter((item) => item !== href);
+    });
+  }, []);
+
+  // A tapped destination takes the highlight before its page arrives, so the
+  // order is always: the control moves, the wait shows, the content follows.
+  const target = pendingHrefs[pendingHrefs.length - 1];
+  const current = (href: string) =>
+    target ? href === target : isActive(pathname, href);
+
   return (
+    <ReportNavigation value={report}>
     <div className="canvas-decor h-dvh p-0 md:p-4">
       <div className="flex h-full flex-col overflow-hidden bg-surface shadow-frame md:flex-row md:rounded-2xl">
         {/* Desktop and tablet icon rail */}
@@ -103,14 +135,14 @@ export function Shell({
                     key={href}
                     href={href}
                     title={label}
-                    aria-current={isActive(pathname, href) ? "page" : undefined}
+                    aria-current={current(href) ? "page" : undefined}
                     className={`flex size-9 items-center justify-center rounded-lg transition-colors ${
-                      isActive(pathname, href)
+                      current(href)
                         ? "bg-ink text-surface"
                         : "text-muted hover:bg-sunken hover:text-ink"
                     }`}
                   >
-                    <NavIcon icon={Icon} size={17} />
+                    <NavIcon icon={Icon} size={17} href={href} />
                   </Link>
                 ))}
               </div>
@@ -176,14 +208,14 @@ export function Shell({
               <Link
                 key={href}
                 href={href}
-                aria-current={isActive(pathname, href) ? "page" : undefined}
+                aria-current={current(href) ? "page" : undefined}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all active:scale-[0.97] ${
-                  isActive(pathname, href)
+                  current(href)
                     ? "bg-ink text-surface"
                     : "bg-sunken text-muted"
                 }`}
               >
-                <NavIcon icon={Icon} size={13} />
+                <NavIcon icon={Icon} size={13} href={href} />
                 {label}
               </Link>
             ))}
@@ -193,8 +225,12 @@ export function Shell({
         {/* min-w-0 lets this column shrink below its content's natural width,
             so intrinsically wide children scroll inside their own container
             instead of being clipped by the frame. */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+          {children}
+          {pendingHrefs.length > 0 && <LoadingOverlay />}
+        </div>
       </div>
     </div>
+    </ReportNavigation>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useTransition } from "react";
+import { useMemo, useOptimistic, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Booking, BookingHour, Restaurant } from "@/lib/types";
 import { isCancelled } from "@/lib/types";
@@ -17,14 +17,13 @@ import {
 } from "@/lib/dates";
 import { TopBar } from "@/components/TopBar";
 import { EmptyState } from "@/components/EmptyState";
-import { ReservationRow } from "@/components/ReservationRow";
+import { ReservationColumns, ReservationLine } from "@/components/ReservationLine";
 import { bookingColour } from "@/lib/table-colours";
-import { Card, Segmented } from "@/components/ui";
+import { Card, LoadingOverlay, Segmented } from "@/components/ui";
 import {
   CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  Spinner,
 } from "@/components/icons";
 import { useReservationOverlays } from "@/components/useReservationOverlays";
 import { useLiveBookings } from "@/components/useLiveBookings";
@@ -287,6 +286,8 @@ export function CalendarView({
 }) {
   const router = useRouter();
   const [navigating, startNavigation] = useTransition();
+  // What the view switch shows while its navigation is in flight.
+  const [pickedMode, setPickedMode] = useOptimistic(mode);
   const today = todayISO(restaurant.timezone);
   const { selected, select, openCreate, overlays } = useReservationOverlays(today);
   useLiveBookings(restaurant.id);
@@ -350,9 +351,12 @@ export function CalendarView({
   }
 
   function setMode(nextMode: CalendarMode) {
-    startNavigation(() =>
-      router.replace(`/calendar?view=${nextMode}&date=${date}`, { scroll: false })
-    );
+    // The control answers the tap straight away; the grid behind it only
+    // changes once the new day or week has arrived.
+    startNavigation(() => {
+      setPickedMode(nextMode);
+      router.replace(`/calendar?view=${nextMode}&date=${date}`, { scroll: false });
+    });
   }
 
   const heading =
@@ -388,27 +392,20 @@ export function CalendarView({
           >
             <ChevronRightIcon size={15} />
           </button>
-          <button
-            type="button"
-            onClick={() => go(today)}
-            className="ml-1 rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium hover:bg-sunken"
-          >
-            Hoy
-          </button>
         </div>
 
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{heading}</p>
           <p className="text-[11px] text-muted tabular-nums">
             {total} {total === 1 ? "reserva" : "reservas"}
           </p>
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
-          {navigating && <Spinner size={14} className="text-muted" />}
+        {/* Its own line on phones, back on the row's end from tablet up. */}
+        <div className="w-full md:ml-auto md:w-auto">
           <Segmented
             label="Vista del calendario"
-            value={mode}
+            value={pickedMode}
             options={[
               { value: "day", label: "Día" },
               { value: "week", label: "Semana" },
@@ -418,7 +415,8 @@ export function CalendarView({
         </div>
       </div>
 
-      <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
+      <div className="relative min-h-0 flex-1">
+      <div className="thin-scroll h-full overflow-y-auto pb-24">
         {bookings.length === 0 ? (
           <EmptyState
             icon={<CalendarIcon size={18} />}
@@ -529,8 +527,9 @@ export function CalendarView({
                       </div>
                       {list.length > 0 && (
                         <Card className="overflow-hidden">
+                          <ReservationColumns />
                           {list.map((booking, index) => (
-                            <ReservationRow
+                            <ReservationLine
                               key={booking.id}
                               booking={booking}
                               selected={selected?.id === booking.id}
@@ -547,6 +546,8 @@ export function CalendarView({
             )}
           </>
         )}
+      </div>
+      {navigating && <LoadingOverlay />}
       </div>
 
       {overlays}

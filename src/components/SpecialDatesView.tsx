@@ -78,7 +78,7 @@ function DateRow({
         type="button"
         onClick={onRemove}
         aria-label={`Eliminar ${specialDate.date}`}
-        className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
+        className="flex size-8 items-center justify-center rounded-lg text-danger hover:bg-danger-soft"
       >
         <TrashIcon size={14} />
       </button>
@@ -132,7 +132,7 @@ export function SpecialDatesView({
       />
 
       <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl px-3 py-4 md:px-6">
+        <div className="mx-auto max-w-3xl px-3 pt-4 pb-24 md:px-6">
           <PageHeading
             title="Fechas especiales"
             description="Festivos, cierres y horarios puntuales. Una fecha especial siempre sustituye el horario habitual de ese día."
@@ -204,15 +204,6 @@ export function SpecialDatesView({
                 </section>
               )}
 
-              <div className="mt-4">
-                <Button
-                  variant="primary"
-                  icon={<PlusIcon size={13} />}
-                  onClick={() => setDialog({})}
-                >
-                  Añadir fecha especial
-                </Button>
-              </div>
             </>
           )}
 

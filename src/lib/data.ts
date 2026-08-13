@@ -19,7 +19,7 @@ import {
   normalizeSpecialDate,
   normalizeTable,
 } from "@/lib/types";
-import { addDays, todayISO } from "@/lib/dates";
+import { todayISO } from "@/lib/dates";
 import { DataError } from "@/lib/errors";
 
 function fail(message: string): never {
@@ -312,13 +312,3 @@ export async function getTodayBookings(restaurant: Restaurant) {
   };
 }
 
-/** Reservations after today, used for the Today summary and the upcoming list. */
-export async function getUpcomingBookings(restaurant: Restaurant, days = 60) {
-  const today = todayISO(restaurant.timezone);
-  const bookings = await getBookingsBetween(
-    restaurant,
-    addDays(today, 1),
-    addDays(today, days)
-  );
-  return { today, bookings };
-}

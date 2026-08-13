@@ -131,7 +131,7 @@ export function RestaurantsList({
                 action={
                   <Link
                     href="/admin/restaurants/new"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[13px] font-medium text-surface hover:opacity-85"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-ok px-3 py-1.5 text-[13px] font-medium text-white hover:opacity-85"
                   >
                     <PlusIcon size={13} /> Nuevo restaurante
                   </Link>
@@ -184,7 +184,7 @@ export function RestaurantsList({
                       type="button"
                       onClick={() => setDeactivating(restaurant)}
                       disabled={busyId === restaurant.id}
-                      className="rounded-lg border border-line px-2 py-1 text-[11px] font-medium hover:bg-sunken disabled:opacity-40"
+                      className="rounded-lg border border-line bg-surface px-2 py-1 text-[11px] font-medium hover:bg-sunken disabled:opacity-40"
                     >
                       {busyId === restaurant.id ? <Spinner size={11} /> : "Desactivar"}
                     </button>
@@ -193,7 +193,7 @@ export function RestaurantsList({
                       type="button"
                       onClick={() => activate(restaurant)}
                       disabled={busyId === restaurant.id}
-                      className="rounded-lg border border-line px-2 py-1 text-[11px] font-medium hover:bg-sunken disabled:opacity-40"
+                      className="rounded-lg bg-ok px-2 py-1 text-[11px] font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-40"
                     >
                       {busyId === restaurant.id ? <Spinner size={11} /> : "Activar"}
                     </button>
@@ -203,7 +203,7 @@ export function RestaurantsList({
                     href={`/admin/restaurants/${restaurant.id}?step=${
                       restaurant.active ? "restaurant" : "settings"
                     }`}
-                    className="inline-flex items-center gap-1 rounded-lg bg-ink px-2.5 py-1 text-[11px] font-medium text-surface hover:opacity-85"
+                    className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface px-2.5 py-1 text-[11px] font-medium hover:bg-sunken"
                   >
                     {restaurant.active ? "Editar" : "Continuar configuración"}
                     <ChevronRightIcon size={11} />

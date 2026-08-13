@@ -67,7 +67,7 @@ export function ConfirmCancelDialog({
             type="button"
             onClick={requestClose}
             disabled={pending}
-            className="flex-1 rounded-lg border border-line py-2 text-[13px] font-medium hover:bg-sunken disabled:opacity-40"
+            className="flex-1 rounded-lg border border-line bg-surface py-2 text-[13px] font-medium hover:bg-sunken disabled:opacity-40"
           >
             Conservar
           </button>
@@ -75,7 +75,7 @@ export function ConfirmCancelDialog({
             type="button"
             onClick={handleConfirm}
             disabled={pending}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-danger py-2 text-[13px] font-medium text-surface transition-opacity hover:opacity-85 disabled:opacity-40"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-danger py-2 text-[13px] font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-40"
           >
             {pending && <Spinner size={13} />}
             Cancelarla

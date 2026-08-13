@@ -230,7 +230,7 @@ export function DetailDrawer({
               <button
                 type="button"
                 onClick={() => onCancel(booking)}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-danger/30 bg-danger-soft py-2 text-[13px] font-medium text-danger hover:border-danger/60"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-danger py-2 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
               >
                 Cancelar reserva
               </button>

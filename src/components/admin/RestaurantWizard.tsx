@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { RestaurantConfig } from "@/lib/admin-data";
@@ -26,7 +26,7 @@ import {
   type WizardStep,
 } from "@/lib/wizard-steps";
 import { TopBar } from "@/components/TopBar";
-import { Button, Card, ErrorNote, PageHeading } from "@/components/ui";
+import { Button, Card, ErrorNote, LoadingOverlay, PageHeading } from "@/components/ui";
 import { BasicsForm } from "@/components/admin/BasicsForm";
 import { SettingsForm } from "@/components/editors/SettingsForm";
 import { TableCapacityPolicy } from "@/components/editors/TableCapacityPolicy";
@@ -100,6 +100,9 @@ export function RestaurantWizard({
 }) {
   const router = useRouter();
   const [navigating, startNavigation] = useTransition();
+  // The step list answers the tap straight away; the panel beside it only
+  // changes once the step has been fetched.
+  const [pickedStep, setPickedStep] = useOptimistic(step);
   const [activating, setActivating] = useState(false);
   const [activateError, setActivateError] = useState<string | null>(null);
 
@@ -108,15 +111,16 @@ export function RestaurantWizard({
   const refresh = () => router.refresh();
 
   function go(next: WizardStep) {
-    startNavigation(() =>
+    startNavigation(() => {
+      setPickedStep(next);
       router.replace(`/admin/restaurants/${restaurant.id}?step=${next}`, {
         scroll: false,
-      })
-    );
+      });
+    });
   }
 
   const stepState = (candidate: WizardStep): "done" | "current" | "todo" => {
-    if (candidate === step) return "current";
+    if (candidate === pickedStep) return "current";
     switch (candidate) {
       case "restaurant":
         return status.owner ? "done" : "todo";
@@ -193,9 +197,9 @@ export function RestaurantWizard({
                     key={candidate}
                     type="button"
                     onClick={() => go(candidate)}
-                    aria-current={candidate === step ? "step" : undefined}
+                    aria-current={candidate === pickedStep ? "step" : undefined}
                     className={`inline-flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-medium transition-colors lg:w-full ${
-                      candidate === step
+                      candidate === pickedStep
                         ? "bg-ink text-surface"
                         : "text-ink-soft hover:bg-sunken"
                     }`}
@@ -204,7 +208,7 @@ export function RestaurantWizard({
                     <span className="truncate">
                       <span
                         className={
-                          candidate === step ? "text-surface/60" : "text-muted"
+                          candidate === pickedStep ? "text-surface/60" : "text-muted"
                         }
                       >
                         {position + 1}.
@@ -216,7 +220,8 @@ export function RestaurantWizard({
               })}
             </nav>
 
-            <div className="min-w-0 flex-1">
+            <div className="relative min-w-0 flex-1">
+              {navigating && <LoadingOverlay />}
               {step === "restaurant" && (
                 <>
                   <PageHeading
@@ -562,7 +567,7 @@ export function RestaurantWizard({
                     type="button"
                     onClick={() => go(next)}
                     disabled={navigating}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[13px] font-medium text-surface transition-opacity hover:opacity-85 disabled:opacity-40"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-ok px-3 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-40"
                   >
                     {STEP_LABELS[next]}
                     <ChevronRightIcon size={13} />

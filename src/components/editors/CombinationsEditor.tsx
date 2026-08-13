@@ -154,7 +154,7 @@ export function CombinationsEditor({
                     setRemoving(combination);
                   }}
                   aria-label={`Eliminar ${combination.name}`}
-                  className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
+                  className="flex size-8 items-center justify-center rounded-lg text-danger hover:bg-danger-soft"
                 >
                   <TrashIcon size={14} />
                 </button>

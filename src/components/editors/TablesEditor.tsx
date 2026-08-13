@@ -127,8 +127,8 @@ export function TablesEditor({
                     aria-hidden
                     className="size-3 shrink-0 rounded-full border"
                     style={{
-                      backgroundColor: tableColour(table.id).fill,
-                      borderColor: tableColour(table.id).ink,
+                      backgroundColor: tableColour(table.id, table.colour).fill,
+                      borderColor: tableColour(table.id, table.colour).ink,
                     }}
                   />
 
@@ -175,7 +175,7 @@ export function TablesEditor({
                         setRemoving(table);
                       }}
                       aria-label={`Eliminar ${table.name}`}
-                      className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
+                      className="flex size-8 items-center justify-center rounded-lg text-danger hover:bg-danger-soft"
                     >
                       <TrashIcon size={14} />
                     </button>

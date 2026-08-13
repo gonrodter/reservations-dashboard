@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Booking, BookingStatus, Restaurant } from "@/lib/types";
 import { isCancelled } from "@/lib/types";
 import { formatDayLabel } from "@/lib/dates";
 import { TopBar } from "@/components/TopBar";
-import { ReservationRow } from "@/components/ReservationRow";
+import { ReservationColumns, ReservationLine } from "@/components/ReservationLine";
 import { EmptyState } from "@/components/EmptyState";
-import { Card, Field, Input, Segmented, Select } from "@/components/ui";
-import { ListIcon, SearchIcon, Spinner } from "@/components/icons";
+import { Card, Field, Input, LoadingOverlay, Segmented, Select } from "@/components/ui";
+import { ListIcon, SearchIcon } from "@/components/icons";
 import { useReservationOverlays } from "@/components/useReservationOverlays";
 import { useLiveBookings } from "@/components/useLiveBookings";
 
@@ -55,6 +55,8 @@ export function ReservationsView({
 }) {
   const router = useRouter();
   const [navigating, startNavigation] = useTransition();
+  // What the range switch shows while its navigation is in flight.
+  const [pickedPreset, setPickedPreset] = useOptimistic(preset);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<BookingStatus | "all" | "active">("all");
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -70,7 +72,12 @@ export function ReservationsView({
       params.set("from", next.from ?? from);
       params.set("to", next.to ?? to);
     }
-    startNavigation(() => router.replace(`/reservations?${params}`, { scroll: false }));
+    // The control answers the tap straight away; the list behind it only
+    // changes once the new range has arrived.
+    startNavigation(() => {
+      setPickedPreset(nextPreset);
+      router.replace(`/reservations?${params}`, { scroll: false });
+    });
   }
 
   // Status and text filtering stay on the client so typing during service
@@ -102,10 +109,6 @@ export function ReservationsView({
     return [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b));
   }, [visible]);
 
-  const covers = filtered
-    .filter((booking) => !isCancelled(booking))
-    .reduce((sum, booking) => sum + (booking.partySize || 0), 0);
-
   return (
     <>
       <TopBar
@@ -121,22 +124,15 @@ export function ReservationsView({
         onNew={() => openCreate(today >= from ? today : from)}
       />
 
-      <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl px-3 py-4 md:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold">Reservas</h2>
-            <p className="text-xs text-muted tabular-nums">
-              {filtered.length} {filtered.length === 1 ? "reserva" : "reservas"} ·{" "}
-              {covers} {covers === 1 ? "comensal" : "comensales"}
-            </p>
-          </div>
-
+      <div className="relative min-h-0 flex-1">
+      <div className="thin-scroll h-full overflow-y-auto">
+        <div className="mx-auto max-w-3xl px-3 py-4 md:px-6">
           {/* Filters */}
-          <div className="mt-3 space-y-2">
+          <div className="space-y-2">
             <div className="thin-scroll -mx-3 flex gap-2 overflow-x-auto px-3 md:mx-0 md:px-0">
               <Segmented
                 label="Intervalo de fechas"
-                value={preset}
+                value={pickedPreset}
                 options={PRESETS}
                 onChange={(value) => {
                   setLimit(PAGE_SIZE);
@@ -160,11 +156,6 @@ export function ReservationsView({
                   ))}
                 </Select>
               </div>
-              {navigating && (
-                <span className="flex shrink-0 items-center text-muted">
-                  <Spinner size={14} />
-                </span>
-              )}
             </div>
 
             {preset === "custom" && (
@@ -210,17 +201,18 @@ export function ReservationsView({
             <>
               {groups.map(([date, list]) => (
                 <section key={date} className="mt-5">
-                  <h3 className="sticky top-0 z-10 -mx-3 bg-surface/95 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted backdrop-blur md:-mx-6 md:px-6">
+                  <h3 className="sticky top-0 z-10 -mx-3 flex items-baseline gap-1.5 bg-surface/95 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted backdrop-blur md:-mx-6 md:px-6">
                     {formatDayLabel(date)}
                     {date === today && (
-                      <span className="ml-1.5 rounded bg-info-soft px-1 py-0.5 text-[10px] text-info">
-                        Hoy
-                      </span>
+                      <span className="font-medium normal-case text-ink-soft">· Hoy</span>
                     )}
                   </h3>
+
                   <Card className="mt-1 overflow-hidden">
+                    <ReservationColumns />
+
                     {list.map((booking, index) => (
-                      <ReservationRow
+                      <ReservationLine
                         key={booking.id}
                         booking={booking}
                         selected={selected?.id === booking.id}
@@ -237,7 +229,7 @@ export function ReservationsView({
                   <button
                     type="button"
                     onClick={() => setLimit((value) => value + PAGE_SIZE)}
-                    className="rounded-lg border border-line px-4 py-2 text-[13px] font-medium hover:bg-sunken"
+                    className="rounded-lg border border-line bg-surface px-4 py-2 text-[13px] font-medium hover:bg-sunken"
                   >
                     Mostrar {Math.min(PAGE_SIZE, filtered.length - visible.length)} más
                   </button>
@@ -246,6 +238,8 @@ export function ReservationsView({
             </>
           )}
         </div>
+      </div>
+      {navigating && <LoadingOverlay />}
       </div>
 
       {overlays}
