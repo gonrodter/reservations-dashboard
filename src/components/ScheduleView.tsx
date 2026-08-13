@@ -6,8 +6,7 @@ import type { BookingHour, Restaurant } from "@/lib/types";
 import { deletePeriod, savePeriod, setPeriodActive } from "@/lib/config-actions";
 import { PeriodDialog } from "@/components/PeriodDialog";
 import { TopBar } from "@/components/TopBar";
-import { Button, PageHeading } from "@/components/ui";
-import { PlusIcon } from "@/components/icons";
+import { PageHeading } from "@/components/ui";
 import {
   ScheduleEditor,
   useScheduleSummary,
@@ -62,16 +61,6 @@ export function ScheduleView({
             festivo? Usa Fechas especiales: siempre tienen prioridad sobre el
             horario semanal.
           </p>
-
-          <div className="mt-3">
-            <Button
-              variant="primary"
-              icon={<PlusIcon size={13} />}
-              onClick={() => setAdding(true)}
-            >
-              Añadir horario de reservas
-            </Button>
-          </div>
         </div>
       </div>
 

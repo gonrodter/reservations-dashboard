@@ -78,7 +78,7 @@ export function TopBar({
       <button
         type="button"
         onClick={() => onNew()}
-        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-lg bg-ok px-4 py-2.5 text-[13px] font-medium text-white shadow-float transition-all hover:opacity-90 active:scale-[0.97]"
+        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-lg bg-ok px-4 py-2.5 text-[13px] font-medium text-white shadow-float transition-all hover:opacity-90 active:scale-[0.97] md:bottom-10"
       >
         <PlusIcon size={15} />
         {newLabel}
