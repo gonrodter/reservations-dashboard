@@ -64,7 +64,7 @@ N8N_WEBHOOK_SECRET=un-secreto-largo-y-aleatorio
   desde código `server-only`, después de comprobar que la sesión es superadmin;
   **nunca** debe llevar el prefijo `NEXT_PUBLIC_` ni llegar al navegador.
 - `APP_URL` construye el destino `/set-password` de las invitaciones.
-- `N8N_WEBHOOK_SECRET` se envía como `Authorization: Bearer ...` a n8n. Hasta
+- `N8N_WEBHOOK_SECRET` se envía como `X-Webhook-Secret` a n8n. Hasta
   configurar Header Auth en los cuatro workflows puede omitirse; debe activarse
   en n8n y Vercel al mismo tiempo para no interrumpir las reservas.
 
@@ -487,7 +487,7 @@ cancelar, el `bookingId` se comprueba antes bajo RLS y el teléfono se saca de l
 propia reserva.
 
 Para autenticar las llamadas del panel, configura Header Auth en los cuatro
-webhooks con `Authorization: Bearer <secreto>` y guarda el mismo valor en
+webhooks con `X-Webhook-Secret: <secreto>` y guarda el mismo valor en
 `N8N_WEBHOOK_SECRET` en Vercel. Haz ambos cambios juntos: si n8n exige el header
 antes de desplegar la variable, el panel dejará de poder consultar o modificar
 reservas.

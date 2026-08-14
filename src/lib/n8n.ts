@@ -12,7 +12,7 @@ async function post(path: string, payload: Record<string, unknown>) {
       headers: {
         "Content-Type": "application/json",
         ...(webhookSecret
-          ? { Authorization: `Bearer ${webhookSecret}` }
+          ? { "X-Webhook-Secret": webhookSecret }
           : {}),
       },
       body: JSON.stringify(payload),
