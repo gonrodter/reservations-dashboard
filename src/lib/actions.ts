@@ -140,18 +140,20 @@ function resolveSlot(
 }
 
 export async function login(
-  _prev: { error: string } | null,
+  _prev: { error: string; email: string } | null,
   formData: FormData
-): Promise<{ error: string }> {
+): Promise<{ error: string; email: string }> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (!email || !password) return { error: "Introduce tu correo electrónico y tu contraseña." };
+  if (!email || !password)
+    return { error: "Introduce tu correo electrónico y tu contraseña.", email };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) return { error: "El correo electrónico o la contraseña son incorrectos." };
+  if (error)
+    return { error: "El correo electrónico o la contraseña son incorrectos.", email };
 
   redirect("/");
 }
