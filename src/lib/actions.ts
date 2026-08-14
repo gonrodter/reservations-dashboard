@@ -25,6 +25,56 @@ function revalidateReservations() {
   for (const path of ["/", "/reservations", "/calendar"]) revalidatePath(path);
 }
 
+const MAX_PARTY_SIZE = 100;
+const MAX_NAME_LENGTH = 120;
+const MAX_PHONE_LENGTH = 50;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_NOTES_LENGTH = 2000;
+const MAX_BOOKING_ID_LENGTH = 128;
+
+function isValidDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+function isValidTime(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{2}:\d{2}$/.test(value)) return false;
+  const [hour, minute] = value.split(":").map(Number);
+  return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+}
+
+function isValidPartySize(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isSafeInteger(value) &&
+    value >= 1 &&
+    value <= MAX_PARTY_SIZE
+  );
+}
+
+function isValidOptionalEmail(value: string): boolean {
+  if (!value) return true;
+  if (value.length > MAX_EMAIL_LENGTH) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isValidBookingId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= MAX_BOOKING_ID_LENGTH
+  );
+}
+
 /**
  * Availability occasionally includes slots that have already started on the
  * restaurant's current local date. Keep those slots out of the UI and repeat
@@ -120,7 +170,7 @@ export async function getAvailability(
 ): Promise<ActionResult<AvailabilitySlot[]>> {
   try {
     const restaurant = await requireRestaurant();
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || partySize < 1) {
+    if (!isValidDate(date) || !isValidPartySize(partySize)) {
       return { ok: false, error: "Elige una fecha y un número de comensales válidos." };
     }
     const [settings, bookingHours, specialDates] = await Promise.all([
@@ -167,10 +217,31 @@ export async function createReservation(input: {
   try {
     const restaurant = await requireRestaurant();
     const settings = await getSettings(restaurant.id);
-    if (!input.name.trim() || !input.phone.trim()) {
+    if (!input || typeof input !== "object") {
+      return { ok: false, error: "Los datos de la reserva no son válidos." };
+    }
+    const name = typeof input.name === "string" ? input.name.trim() : "";
+    const phone = typeof input.phone === "string" ? input.phone.trim() : "";
+    const email = typeof input.email === "string" ? input.email.trim() : "";
+    const notes = typeof input.notes === "string" ? input.notes.trim() : "";
+
+    if (!name || !phone) {
       return { ok: false, error: "El nombre y el teléfono son obligatorios." };
     }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !/^\d{2}:\d{2}$/.test(input.time)) {
+    if (name.length > MAX_NAME_LENGTH || phone.length > MAX_PHONE_LENGTH) {
+      return { ok: false, error: "El nombre o el teléfono son demasiado largos." };
+    }
+    if (!isValidOptionalEmail(email)) {
+      return { ok: false, error: "Introduce un correo electrónico válido." };
+    }
+    if (notes.length > MAX_NOTES_LENGTH) {
+      return { ok: false, error: "Las notas no pueden superar los 2000 caracteres." };
+    }
+    if (
+      !isValidDate(input.date) ||
+      !isValidTime(input.time) ||
+      !isValidPartySize(input.partySize)
+    ) {
       return { ok: false, error: "Elige una fecha y una hora válidas." };
     }
     if (isPastSlot(input.date, input.time, restaurant.timezone)) {
@@ -181,10 +252,10 @@ export async function createReservation(input: {
       date: input.date,
       time: input.time,
       partySize: input.partySize,
-      name: input.name.trim(),
-      phone: input.phone.trim(),
-      email: input.email.trim(),
-      notes: input.notes.trim(),
+      name,
+      phone,
+      email,
+      notes,
       strictTableCapacity: settings?.strictTableCapacity ?? false,
     });
     revalidateReservations();
@@ -202,6 +273,9 @@ export async function createReservation(input: {
  */
 async function findAccessibleBooking(bookingId: string) {
   const restaurant = await requireRestaurant();
+  if (!isValidBookingId(bookingId)) {
+    return { restaurant, booking: null };
+  }
   const booking = await getBookingById(restaurant, bookingId);
   return { restaurant, booking };
 }
@@ -213,9 +287,17 @@ export async function updateReservation(input: {
   partySize: number;
 }): Promise<ActionResult> {
   try {
+    if (!input || typeof input !== "object") {
+      await requireRestaurant();
+      return { ok: false, error: "Los datos de la reserva no son válidos." };
+    }
     const { restaurant, booking } = await findAccessibleBooking(input.bookingId);
     if (!booking) return { ok: false, error: "No se encontró esta reserva." };
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !/^\d{2}:\d{2}$/.test(input.time)) {
+    if (
+      !isValidDate(input.date) ||
+      !isValidTime(input.time) ||
+      !isValidPartySize(input.partySize)
+    ) {
       return { ok: false, error: "Elige una fecha y una hora válidas." };
     }
     if (isPastSlot(input.date, input.time, restaurant.timezone)) {

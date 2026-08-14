@@ -48,13 +48,14 @@ Stack: Next.js 16 (App Router) · TypeScript · Tailwind v4 · Supabase (Auth + 
 
 ## 2. Variables de entorno
 
-Hay dos variables públicas y dos exclusivas del servidor:
+Hay dos variables públicas y tres exclusivas del servidor:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://TU-PROYECTO.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 SUPABASE_SECRET_KEY=sb_secret_...
 APP_URL=https://reservations.terron-studio.com
+N8N_WEBHOOK_SECRET=un-secreto-largo-y-aleatorio
 ```
 
 - Van en **`.env.local`** (está en `.gitignore`, nunca se sube a git).
@@ -63,6 +64,9 @@ APP_URL=https://reservations.terron-studio.com
   desde código `server-only`, después de comprobar que la sesión es superadmin;
   **nunca** debe llevar el prefijo `NEXT_PUBLIC_` ni llegar al navegador.
 - `APP_URL` construye el destino `/set-password` de las invitaciones.
+- `N8N_WEBHOOK_SECRET` se envía como `Authorization: Bearer ...` a n8n. Hasta
+  configurar Header Auth en los cuatro workflows puede omitirse; debe activarse
+  en n8n y Vercel al mismo tiempo para no interrumpir las reservas.
 
 Si cambias una variable, **reinicia el servidor**: las `NEXT_PUBLIC_*` se
 incrustan en el bundle al compilar.
@@ -481,6 +485,12 @@ Se llaman **solo desde el servidor** (`src/lib/n8n.ts`). El `restaurantSlug` se
 resuelve siempre desde la sesión, nunca lo manda el navegador. En modificar y
 cancelar, el `bookingId` se comprueba antes bajo RLS y el teléfono se saca de la
 propia reserva.
+
+Para autenticar las llamadas del panel, configura Header Auth en los cuatro
+webhooks con `Authorization: Bearer <secreto>` y guarda el mismo valor en
+`N8N_WEBHOOK_SECRET` en Vercel. Haz ambos cambios juntos: si n8n exige el header
+antes de desplegar la variable, el panel dejará de poder consultar o modificar
+reservas.
 
 Las peticiones de disponibilidad, creación y modificación incluyen además
 `strictTableCapacity`, siempre resuelto en el servidor desde

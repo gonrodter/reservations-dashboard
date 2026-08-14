@@ -6,11 +6,18 @@ const BASE_URL = "https://gonrodter.app.n8n.cloud/webhook";
 async function post(path: string, payload: Record<string, unknown>) {
   let response: Response;
   try {
+    const webhookSecret = process.env.N8N_WEBHOOK_SECRET?.trim();
     response = await fetch(`${BASE_URL}/${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(webhookSecret
+          ? { Authorization: `Bearer ${webhookSecret}` }
+          : {}),
+      },
       body: JSON.stringify(payload),
       cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
     });
   } catch {
     throw new BackendError(
