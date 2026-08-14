@@ -434,6 +434,14 @@ antes de enviar al propietario a `/set-password`:
 </a>
 ```
 
+### 7.5 Historial de migraciones
+
+El historial remoto de Supabase está reconciliado con los archivos de
+`supabase/migrations/` hasta `20260814075848_harden_privileged_functions.sql`.
+Las migraciones anteriores que ya existían en producción se registraron como
+aplicadas sin volver a ejecutar su SQL. A partir de aquí, cada cambio de esquema
+debe añadirse como una migración nueva y versionarse junto con el código.
+
 ---
 
 ## 8. Columnas que asume el código
